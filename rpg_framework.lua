@@ -3,6 +3,11 @@ require "LibDeflate"
 require "base64"
 
 
+local yellow_color = {r=1,g=1,b=0}
+local red_color = {r=1,g=0,b=0}
+local green_color = {r=0,g=1,b=0}
+
+
 --TODO: check
 local function table_length(tbl)
 	local i = 0
@@ -17,8 +22,8 @@ script.on_event(defines.events.on_gui_click, function(event)
 	local element = event.element
 	if not (element and element.valid) then return end
 
-	local player_id = element.player_index
-	local player = game.players[player_id]
+	local player = game.get_player(element.player_index)
+	local force = player.force
 	local force_data = global.forces[player.force.name]
 	local gui_name = element.name
 	local parent_name = element.parent.name
@@ -30,10 +35,11 @@ script.on_event(defines.events.on_gui_click, function(event)
 
 	if gui_name == "rpgitems_bonus_slot" then
 		if event.button == defines.mouse_button_type.right then
-			if force_data.money >= 50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value) then
-				force_data.money = force_data.money-(50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value))
+			local price_mult = settings.global["rpgitems_price_mult"].value
+			if force_data.money >= 50000+force_data.bonus_slots*10000*(global.price_mult or price_mult) then
+				force_data.money = force_data.money-(50000+force_data.bonus_slots*10000*(global.price_mult or price_mult))
 				force_data.bonus_slots = force_data.bonus_slots + 1
-				element.number = 50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value)
+				element.number = 50000+force_data.bonus_slots*10000*(global.price_mult or price_mult)
 				for _, p in pairs(force_data.players) do
 					create_equipment_gui(p)
 					if p.gui.center.rpgitems_market then
@@ -43,12 +49,12 @@ script.on_event(defines.events.on_gui_click, function(event)
 			end
 		end
 	elseif item and parent_name == "market_buy_item" and force_data.money >= element.number then
-		buy_item(player.force, gui_name)
+		buy_item(force, gui_name)
 		player.gui.left.rpgitems_item_gui.money.caption = math.floor(force_data.money).."[img=rpgitems-coin]"
 		open_market(player)
 	elseif item and parent_name == "market_table" then
 		if event.button == defines.mouse_button_type.right and force_data.money >= element.number then
-			buy_item(player.force, gui_name)
+			buy_item(force, gui_name)
 			player.gui.left.rpgitems_item_gui.money.caption = math.floor(force_data.money).."[img=rpgitems-coin]"
 			open_market(player)
 		else
@@ -73,7 +79,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 				force_data.items = sort_items(force_data.items)
 				force_data.money = force_data.money + get_sell_price(element.sprite) * 0.8
 				player.gui.left.rpgitems_item_gui.money.caption = math.floor(force_data.money).."[img=rpgitems-coin]"
-				update_items(player.force)
+				update_items(force)
 				open_market(player)
 			end
 		--end
@@ -97,7 +103,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 						end
 					end
 				end
-				update_items(player.force)
+				update_items(force)
 			end
 		end
 	end
@@ -403,7 +409,7 @@ function talents_gui(player)
 		remove_margin_padding(r)
 		r.style.right_margin = -5
 		r.style.left_margin = -9
-		r.style.color= {r=1,g=0,b=0}
+		r.style.color= red_color
 		r.value = math.min(1,verified_talents.r.spent/verified_talents.r.width)
 	end
 	if verified_talents.total_spent <28+BONUS_TALENTS*4 or verified_talents.g.width >0 then
@@ -413,7 +419,7 @@ function talents_gui(player)
 		--game.print("g ".. 190*verified_talents.g.width/(8+BONUS_TALENTS))
 		remove_margin_padding(g)
 		g.style.right_margin = -5
-		g.style.color = {r=0,g=1,b=0}
+		g.style.color = green_color
 		g.value = math.min(1,verified_talents.g.spent/verified_talents.g.width)
 	end
 	if verified_talents.total_spent <28+BONUS_TALENTS*4 or verified_talents.b.width >0 then
@@ -610,7 +616,7 @@ end
 
 function sort_items(array)
 	local temp = {}
-	local i = 1
+	-- local i = 1
 	local itemcounts = {}
 	for _, e in pairs(array) do
 		itemcounts[e.item] = (itemcounts[e.item] or 0)+e.count
@@ -618,8 +624,8 @@ function sort_items(array)
 	for name, count in pairs(itemcounts) do
 		while count > 0 do
 			local tempcount = math.min((global.items[name].stack_size or 1), count)
-			count = count - tempcount
-			table.insert(temp, {item = name, count = tempcount})
+			count = count - tempcount -- what?
+			temp[#temp+1] = {item = name, count = tempcount}
 		end
 	end
 	return temp
@@ -883,7 +889,11 @@ function remove_modifiers(force, tbl)
 		local mult = 1
 		if modifier.periodical then
 			mult = modifier.periodical
-			table.insert(stack_cache, {type = modifier.type, modifier = modifier.modifier, ammo= modifier.ammo, value = modifier.value, turret = modifier.turret, periodical = mult})
+			stack_cache[#stack_cache+1] = {
+				type = modifier.type, modifier = modifier.modifier,
+				ammo= modifier.ammo, value = modifier.value,
+				turret = modifier.turret, periodical = mult
+			}
 		end
 		remove_modifier(force, modifier, mult)
 	end
@@ -905,9 +915,10 @@ function add_modifiers(force, tbl, stack_cache)
 		--if modifier.type == "player" then
 		--	player[modifier.modifier] = player[modifier.modifier] + modifier.value
 		--else
+		local modifiers = global.forces[force.name].modifiers
 		local unique = false
 		if modifier.unique then
-			for _, checkmod in pairs(global.forces[force.name].modifiers) do
+			for _, checkmod in pairs(modifiers) do
 				if checkmod.unique == modifier.unique then
 					unique = true
 				end
@@ -919,7 +930,7 @@ function add_modifiers(force, tbl, stack_cache)
 					local new_mod = deepcopy(mod)
 					new_mod.ammo = a
 					add_modifier(force, new_mod, mult)
-					table.insert(global.forces[force.name].modifiers, new_mod)
+					modifiers[#modifiers+1] = new_mod
 				end
 				--local new_mod = math.max(0,global.forces[force.name].bonuses.chardamage_mult +modifier.value*mult)
 				--if new_mod < 0.00000001 then
@@ -931,11 +942,11 @@ function add_modifiers(force, tbl, stack_cache)
 					local new_mod = deepcopy(mod)
 					new_mod.ammo = a
 					add_modifier(force, new_mod, mult)
-					table.insert(global.forces[force.name].modifiers, new_mod)
+					modifiers[#modifiers+1] = new_mod
 				end
 			else
 				add_modifier(force, modifier, mult)
-				table.insert(global.forces[force.name].modifiers, modifier)
+				modifiers[#modifiers+1] = modifier
 			end
 		end
 	end
@@ -949,7 +960,7 @@ function get_stack(modifier, stack_cache)
 	local value = modifier.value
 	local turret = modifier.turret
 	local biggest_mult = 0
-	for i, mod2 in pairs(stack_cache) do
+	for _, mod2 in pairs(stack_cache) do
 		if type == mod2.type and mod == mod2.modifier and ammo== mod2.ammo and value == mod2.value and turret == mod2.turret then		--, periodical = mult}
 			biggest_mult = mod2.periodical
 		end
@@ -963,48 +974,58 @@ function get_stack(modifier, stack_cache)
 end
 
 function update_items(force)
-	local stacks = remove_modifiers(force,global.forces[force.name].modifiers)
-	global.forces[force.name].modifiers = {}
-	for _, data in pairs(global.forces[force.name].items) do
+	local force_data = global.forces[force.name]
+	local stacks = remove_modifiers(force,force_data.modifiers)
+	force_data.modifiers = {}
+	local items = global.items
+	for _, data in pairs(force_data.items) do
+		local item = items[data.item]
 		for i=1, (data.count or 1) do
-			stacks = add_modifiers(force,global.items[data.item].effects, stacks)
+			stacks = add_modifiers(force, item.effects, stacks)
 		end
 	end
-	for _, player in pairs(global.forces[force.name].players) do
-		if #player.gui.left.rpgitems_item_gui.equipment_table.children ~= 4+global.forces[player.force.name].bonus_slots then
+	for _, player in pairs(force_data.players) do
+		local force_data = global.forces[player.force.name]
+		if #player.gui.left.rpgitems_item_gui.equipment_table.children ~= 4+force_data.bonus_slots then
 			create_equipment_gui(player)
 		end
 		local i = 1
-		for _, data in pairs(global.forces[force.name].items) do
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].sprite = data.item
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].tooltip = global.items[data.item].name.."\n\n"..global.items[data.item].description
-			if global.items[data.item].stack_size then
-				player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].number = data.count
+		local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
+		for _, data in pairs(force_data.items) do
+			local item = items[data.item]
+			local gui = equipment_table["item_"..i]
+			gui.sprite = data.item
+			gui.tooltip = item.name.."\n\n"..item.description
+			if item.stack_size then
+				gui.number = data.count
 			else
-				player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].number = nil
+				gui.number = nil
 			end
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].clear()
-			if global.forces[force.name].item_cooldowns[data.item] then
-				local bar = player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].add{type = "progressbar", name = "cd", value = (global.forces[force.name].item_cooldowns[data.item]/global.items[data.item].cooldown)}
-				bar.style.color = {r=1,g=1,b=0}
-				bar.style.width = 24
-				bar.style.top_padding = 0
-				bar.style.bottom_padding = 0
-				bar.style.left_padding = 0
-				bar.style.right_padding = 0
-				bar.style.top_margin = 0
-				bar.style.bottom_margin = 0
-				bar.style.left_margin = -1
-				bar.style.right_margin = 0
+			gui.clear()
+			local cooldown = force_data.item_cooldowns[data.item]
+			if cooldown then
+				local bar = gui.add{type = "progressbar", name = "cd", value = (cooldown / item.cooldown)}
+				local style = bar.style
+				style.color = yellow_color
+				style.width = 24
+				style.top_padding = 0
+				style.bottom_padding = 0
+				style.left_padding = 0
+				style.right_padding = 0
+				style.top_margin = 0
+				style.bottom_margin = 0
+				style.left_margin = -1
+				style.right_margin = 0
 			end
 			i=i+1
 		end
 
-		for j=i, 4+global.forces[player.force.name].bonus_slots do
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..j].sprite = "transparent32"
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..j].tooltip = ""
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..j].number = nil
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..j].clear()
+		for j=i, 4+force_data.bonus_slots do
+			local gui = equipment_table["item_"..j]
+			gui.sprite = "transparent32"
+			gui.tooltip = ""
+			gui.number = nil
+			gui.clear()
 		end
 	end
 end
@@ -1019,13 +1040,12 @@ function lock_items(player)
 		end
 	end
 end
+
 function unlock_items(player)
 	for _, elem in pairs(player.gui.left.rpgitems_item_gui.equipment_table.children) do
 		elem.mouse_button_filter = {"right"}
 	end
 end
-
-
 
 function style_item_button(elem)
 	elem.style.top_padding = 0
@@ -1036,7 +1056,7 @@ end
 
 function remove_parts(force,itemname, only_calculate_price)
 	local price = global.items[itemname].price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
-	local tableremove = {}
+	-- local tableremove = {}
 	if global.items[itemname].parts then
 		for _, part in pairs(global.items[itemname].parts) do
 			local removed_amount = 0
@@ -1072,13 +1092,13 @@ function remove_parts(force,itemname, only_calculate_price)
 	return price
 end
 
-function recursive_can_insert (force,itemname)
+function recursive_can_insert(force,itemname)
 	local cleared_slots = 0
-	local price = global.items[itemname].price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
+	-- local price = global.items[itemname].price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
 	if global.items[itemname].parts then
 		for _, part in pairs(global.items[itemname].parts) do
 			local removed_amount = 0
-			for i, data in pairs( global.forces[force.name].items ) do
+			for _, data in pairs( global.forces[force.name].items ) do
 				if removed_amount < part.count then
 					if data.item == part.name then
 						if data.count == 1 then
@@ -1107,16 +1127,17 @@ end
 
 function can_insert_item(force, item)
 	local stack_size = global.items[item].stack_size
-	if table_length(global.forces[force.name].items) < 4+global.forces[force.name].bonus_slots then
+	local force_data = global.forces[force.name]
+	if table_length(force_data.items) < 4 + force_data.bonus_slots then
 		return true
 	elseif stack_size then
-		for _, data in pairs(global.forces[force.name].items) do
+		for _, data in pairs(force_data.items) do
 			if data.item == item and (data.count or 1) < (stack_size or 1) then
 				return true
 			end
 		end
 	else
-		if recursive_can_insert(force,item)>0 then
+		if recursive_can_insert(force,item) > 0 then
 			return true
 		end
 	end
@@ -1138,13 +1159,13 @@ function buy_item(force, itemname, only_calculate_price)
 	if only_calculate_price then
 		only_calculate_price = deepcopy(force_data.items)
 	end
-	local price = remove_parts(force,itemname,only_calculate_price)
+	local price = remove_parts(force, itemname, only_calculate_price)
 	if only_calculate_price then
 		return price
 	elseif force_data.money >= price and can_insert_item(force, itemname) then
 		force_data.items = sort_items(force_data.items)
 		force_data.money = force_data.money - price
-		insert_item(force,itemname)
+		insert_item(force, itemname)
 		update_items(force)
 	end
 end
@@ -1162,42 +1183,31 @@ function open_market(player, selected_item)
 	local table = gui.add{type="table", name = "market_table", column_count = 8}
 	--table.style.minimal_height = 300
 	local excluded_items = {}
-	for name, data in pairs(global.items) do
-		if data.parts and (not data.tech_requirement or player.force.technologies[data.tech_requirement].researched) then
+	local technologies = player.force.technologies
+	for _, data in pairs(global.items) do
+		if data.parts and (not data.tech_requirement or technologies[data.tech_requirement].researched) then
 			for _, data2 in pairs(data.parts) do
 				excluded_items[data2.name] = true
 			end
 		end
 	end
 	for name, data in pairs(global.items) do
-		if (not excluded_items[name] or global.items[name].always_show_in_main_list)
-		and
-		(
-			not global.items[name].requires
-			or
-			(
-				game.active_mods[global.items[name].requires]
-				and
-				(
-					not global.items[name].andversion
-					or tonumber(game.active_mods[global.items[name].requires]:sub(-2)) >= global.items[name].andversion
-				)
-			)
-		)
-		and
-		(
-			not global.items[name].conflicts
-			or not
-			(
-				game.active_mods[global.items[name].conflicts]
-				and
-				(
-					not global.items[name].andversion
-					or tonumber(game.active_mods[global.items[name].conflicts]:sub(-2)) >= global.items[name].andversion
-				)
-			)
-		)
-		and (not data.tech_requirement or player.force.technologies[data.tech_requirement].researched)
+		local item = global.items[name]
+		if (not excluded_items[name] or item.always_show_in_main_list) -- it's messy...
+			and	(not item.requires
+				or (game.active_mods[item.requires]
+					and (not item.andversion
+						or tonumber(game.active_mods[item.requires]:sub(-2)) >= item.andversion
+					)	)	)
+			and (not item.conflicts
+				or not (game.active_mods[item.conflicts]
+					and (
+						not item.andversion
+						or tonumber(game.active_mods[item.conflicts]:sub(-2)) >= item.andversion
+							)
+						)
+					)
+			and (not data.tech_requirement or player.force.technologies[data.tech_requirement].researched)
 		then
 			local button
 			if name == "rpgitems_bonus_slot" then
@@ -1288,9 +1298,8 @@ function add_parts_to_gui(force,item, gui, amount)
 			add_parts_to_gui(force,part.name, partstable, part.count)
 		end
 	end
-
-
 end
+
 function create_equipment_gui(player)
 	if player.gui.left.rpgitems_item_gui then player.gui.left.rpgitems_item_gui.destroy() end
 	local gui = player.gui.left.add{type = "frame", name= "rpgitems_item_gui", direction= "vertical"}
@@ -1298,55 +1307,63 @@ function create_equipment_gui(player)
 	gui.style.left_padding = 2
 	gui.style.right_padding = 2
 	gui.style.horizontal_align = "center"
+
+	local force_data = global.forces[player.force.name]
 	local cols = 2
-	if 4+global.forces[player.force.name].bonus_slots <= 6 then
+	if 4+force_data.bonus_slots <= 6 then
 		cols = 2
-	elseif 4+global.forces[player.force.name].bonus_slots <= 12 then
+	elseif 4+force_data.bonus_slots <= 12 then
 		cols = 3
 	else
 		cols = 4
 	end
 	local table = gui.add{type = "table", name = "equipment_table", column_count = cols}
-	for i=1,4+global.forces[player.force.name].bonus_slots do
+	for i=1,4+force_data.bonus_slots do
 		local button = table.add{type = "sprite-button", name = "item_"..i, style = "recipe_slot_button"}
 		style_item_button(button)
 		button.style.natural_height = 32
 		button.style.natural_width = 32
 	end
 
-
 	local i=1
-	for _, data in pairs(global.forces[player.force.name].items) do
-		player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].sprite = data.item
-		player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].tooltip = global.items[data.item].name.."\n\n"..global.items[data.item].description
-		if global.items[data.item].stack_size then
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].number = data.count
+	local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
+	for _, data in pairs(force_data.items) do
+		local item = global.items[data.item]
+		local item_gui = equipment_table["item_"..i]
+		item_gui.sprite = data.item
+		item_gui.tooltip = item.name.."\n\n"..item.description
+		if item.stack_size then
+			item_gui.number = data.count
 		else
-			player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].number = nil
+			item_gui.number = nil
 		end
-		player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].clear()
-		if global.forces[player.force.name].item_cooldowns[data.item] then
-			local bar = player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].add{type = "progressbar", name = "cd", value = (global.forces[player.force.name].item_cooldowns[data.item]/global.items[data.item].cooldown)}
-			bar.style.color = {r=1,g=1,b=0}
-			bar.style.width = 24
-			bar.style.top_padding = 0
-			bar.style.bottom_padding = 0
-			bar.style.left_padding = 0
-			bar.style.right_padding = 0
-			bar.style.top_margin = 0
-			bar.style.bottom_margin = 0
-			bar.style.left_margin = -1
-			bar.style.right_margin = 0
+		item_gui.clear()
+
+		local cooldown = force_data.item_cooldowns[data.item]
+		if cooldown then
+			local bar = item_gui.add{type = "progressbar", name = "cd", value = (cooldown/item.cooldown)}
+			local style = bar.style
+			style.color = yellow_color
+			style.width = 24
+			style.top_padding = 0
+			style.bottom_padding = 0
+			style.left_padding = 0
+			style.right_padding = 0
+			style.top_margin = 0
+			style.bottom_margin = 0
+			style.left_margin = -1
+			style.right_margin = 0
 		end
 		i=i+1
 	end
-	for j=i, 4+global.forces[player.force.name].bonus_slots do
-		player.gui.left.rpgitems_item_gui.equipment_table["item_"..j].sprite = "transparent32"
-		player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].tooltip = ""
-		player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].number = nil
-		player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].clear()
+	for j=i, 4+force_data.bonus_slots do
+		local item_gui = equipment_table["item_"..j]
+		item_gui.sprite = "transparent32"
+		item_gui.tooltip = ""
+		item_gui.number = nil
+		item_gui.clear()
 	end
-	gui.add{type = "label", name ="money", caption = math.floor(global.forces[player.force.name].money).."[img=rpgitems-coin]"}
+	gui.add{type = "label", name ="money", caption = math.floor(force_data.money).."[img=rpgitems-coin]"}
 	if player.gui.center.rpgitems_market then
 		unlock_items(player)
 	else

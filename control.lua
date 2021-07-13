@@ -1,6 +1,10 @@
 require("ITEMS")
 require("rpg_framework")
 
+
+local random = math.random
+
+
 remote.add_interface("rpg-items", {
 		get = function(field) return global[field] end,
 		set = function(field, value)
@@ -368,21 +372,25 @@ function remove_stickers(player)
 	end
 end
 
+-- TODO: optimize!
 script.on_nth_tick(6, function(event)
 	if not global.forces then return end
-	for id, data in pairs(global.forces) do
+
+	for _, data in pairs(global.forces) do
 		for _, player in pairs(data.players) do
 			local character = player.character
+			local bonuses = data.bonuses
 			if character then
-				character.health = character.health + data.bonuses.regen/10
-				if data.bonuses.pctregen > 0 then
-					character.health = character.health + (character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*data.bonuses.pctregen
-					--game.print((character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*data.bonuses.pctregen*10)
+				character.health = character.health + bonuses.regen/10
+				if bonuses.pctregen > 0 then
+					character.health = character.health + (character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen
+					--game.print((character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen*10)
 				end
 			end
 		end
 	end
-	for _, player in pairs ( game.players) do
+
+	for _, player in pairs(game.connected_players) do
 		if player.character and player.character.valid and global.forces[player.force.name] and global.forces[player.force.name].bonuses.energy then
 			local target_entity = nil
 			local vehicle = player.vehicle
@@ -419,31 +427,36 @@ script.on_nth_tick(6, function(event)
 			end
 		end
 
+		local player_index = player.index
 		local force_name = player.force.name
-		if global.forces[force_name] and global.forces[force_name].bonuses.momentum > 0 and player.character and player.character.valid then
+		local force_data = global.forces[force_name]
+		local player_momentum = global.momentum[player_index]
+		if force_data and force_data.bonuses.momentum > 0 and player.character and player.character.valid then
 			local position_x = player.position.x
 			local position_y = player.position.y
-			if not global.momentum[player.index] then
-				global.momentum[player.index] = {position_x = position_x, position_y = position_y, momentum = 0}
+			if not player_momentum then
+				global.momentum[player_index] = {position_x = position_x, position_y = position_y, momentum = 0}
+				player_momentum = global.momentum[player_index]
 			end
-			if position_x == global.momentum[player.index].position_x and position_y == global.momentum[player.index].position_y then
+
+			if position_x == player_momentum.position_x and position_y == player_momentum.position_y then
 				remove_stickers(player)
-				global.momentum[player.index].momentum = 0
-			elseif event.tick % 60 == 0 and global.momentum[player.index].momentum < 5 then
-				global.momentum[player.index].momentum = global.momentum[player.index].momentum + 1
-				player.surface.create_entity{name = "rpgitems-speed-sticker-"..global.momentum[player.index].momentum, position=player.position, target= player.character}
+				player_momentum.momentum = 0
+			elseif event.tick % 60 == 0 and player_momentum.momentum < 5 then
+				player_momentum.momentum = player_momentum.momentum + 1
+				player.surface.create_entity{name = "rpgitems-speed-sticker-"..player_momentum.momentum, position=player.position, target= player.character}
 			end
-			global.momentum[player.index].position_x = position_x
-			global.momentum[player.index].position_y = position_y
-		elseif global.momentum[player.index] and global.momentum[player.index].momentum > 0 then
+			player_momentum.position_x = position_x
+			player_momentum.position_y = position_y
+		elseif player_momentum and player_momentum.momentum > 0 then
 			remove_stickers(player)
-			global.momentum[player.index].momentum = 0
+			player_momentum.momentum = 0
 		end
 	end
 end)
 
 script.on_nth_tick(61, function(event)
-	for _, player in pairs(game.players) do
+	for _, player in pairs(game.connected_players) do
 		local last = nil
 		for _, g in pairs(player.gui.left.children) do
 			last = g.name
@@ -453,6 +466,7 @@ script.on_nth_tick(61, function(event)
 		end
 	end
 end)
+
 function disable_immolation(player)
 	global.immolation [player.index] = nil
 	if player.character and player.character.valid and player.character.stickers then
@@ -629,7 +643,7 @@ end)
 
 
 script.on_event(defines.events.on_player_died, function(event)
-	local player=game.get_player(event.player_index)
+	local player = game.get_player(event.player_index)
 	if player.gui.center.rpgitems_market then player.gui.center.rpgitems_market.destroy() end
 end)
 
@@ -664,90 +678,109 @@ function apply_armor (event, armor)
 	end
 	event.entity.health = event.entity.health + event.final_damage_amount*armor + bonus_healing
 end
+
+-- TODO: optimize
 script.on_event(defines.events.on_entity_damaged, function(event)
 	--print("orig: "..event.original_damage_amount)
 	--print("final: "..event.final_damage_amount )
-	if event.entity and event.entity.health >0 then
-		local force = event.entity.force
-		if event.entity.type == "character" then
-			local player = event.entity.player
-			if event.cause and global.forces[force.name].bonuses.thorns > 0 and event.damage_type.name ~="acid" and event.damage_type.name ~="fire" then
-				event.cause.damage(global.forces[force.name].bonuses.thorns, event.entity.force, event.damage_type.name)
+	local cause = event.cause
+	local entity = event.entity
+
+	if entity and entity.health >0 then
+		local force = entity.force
+		local force_data = global.forces[force.name]
+		local force_bonuses = force_data.bonuses
+		if entity.type == "character" then
+			local damage_type = event.damage_type.name
+			local damage = force_bonuses.thorns
+			if cause and damage > 0 and damage_type ~="acid" and damage_type ~= "fire" then
+				cause.damage(damage, entity.force, damage_type)
 			end
+			-- local player = entity.player
 			--if event.damage_type.name:sub(1,4)=="osp_" then
 			--	local mres = global.forces[player.force.name].bonuses.magic_resistance /(global.forces[player.force.name].bonuses.magic_resistance+100)
-			--	event.entity.health = event.entity.health + event.final_damage_amount*mres
+			--	entity.health = entity.health + event.final_damage_amount*mres
 			--else
-				local armor = global.forces[force.name].bonuses.armor /(global.forces[force.name].bonuses.armor+100)
-				apply_armor(event,armor)
+				local armor = force_bonuses.armor
+				apply_armor(event, armor / (armor+100))
 			--end
-		elseif global.forces[force.name] and global.forces[force.name].bonuses.repair > 0 and event.entity.name ~="RITEG-1" then
-			global.repairing[event.entity.unit_number] = event.entity
+		elseif force_data and force_bonuses.repair > 0 and entity.name ~= "RITEG-1" then
+			global.repairing[entity.unit_number] = entity
 		end
 	end
-	if event.cause and event.cause.valid then
-		local force = event.cause.force.name
-		if not global.forces[force] then return end
-		if event.entity.valid then
+
+	if cause and cause.valid then
+		local force_name = cause.force.name
+		local force_data = global.forces[force_name]
+		local force_bonuses = force_data.bonuses
+		if not force_data then return end
+
+		if entity.valid then
 			local extradamage = 0
 			--if event.damage_type.name == "chardamage" then
-			--	local mult = global.forces[force].bonuses.chardamage_mult+event.cause.force.get_turret_attack_modifier("character")
+			--	local mult = global.forces[force].bonuses.chardamage_mult+cause.force.get_turret_attack_modifier("character")
 			--	extradamage = global.forces[force].bonuses.chardamage*mult + (mult-1)*8
-			--	extradamage = event.entity.damage(extradamage, event.cause.force, "physical")
+			--	extradamage = entity.damage(extradamage, cause.force, "physical")
 			--end
-			if event.entity.valid and math.random() < global.forces[force].bonuses.stun * (event.cause.type == "character" and 6 or 2) then
-				--game.print(global.forces[force].bonuses.stun * (event.cause.type == "character" and 2 or 1))
-				if event.entity.type == "unit" or event.entity.type == "character" then
-					event.entity.surface.create_entity{ name="rpgitems-stun-sticker", position=event.entity.position, target=event.entity }
+			if entity.valid and random() < force_bonuses.stun * (cause.type == "character" and 6 or 2) then
+				--game.print(global.forces[force].bonuses.stun * (cause.type == "character" and 2 or 1))
+				if entity.type == "unit" or entity.type == "character" then
+					entity.surface.create_entity{ name="rpgitems-stun-sticker", position=entity.position, target=entity }
 				end
 			end
-			if event.entity.valid and event.entity.has_flag("breaths-air") and math.random() < global.forces[force].bonuses.crit then
-				local pos =  event.entity.position
-				local surface = event.entity.surface
+			if entity.valid and entity.has_flag("breaths-air") and random() < force_bonuses.crit then
+				local pos =  entity.position
+				local surface = entity.surface
 				--local player_mult = 1
 				--if event.
-				extradamage = event.entity.damage((event.original_damage_amount+extradamage)*(1+global.forces[force].bonuses.critdamage), event.cause.force, event.damage_type.name)
+				extradamage = entity.damage((event.original_damage_amount+extradamage)*(1+force_bonuses.critdamage), cause.force, event.damage_type.name)
 				local dmg = extradamage + event.final_damage_amount
 				surface.create_entity{name="flying-text", position = pos, color = {r=1,g=0,b=0}, text = math.floor(dmg)}
 			end
-			if event.cause.type == "character" then
-				if global.forces[force].bonuses.pctlifesteal > 0 then
-					event.cause.health = event.cause.health + (event.final_damage_amount + extradamage)/100*global.forces[force].bonuses.pctlifesteal
+			if cause.type == "character" then
+				if force_bonuses.pctlifesteal > 0 then
+					cause.health = cause.health + (event.final_damage_amount + extradamage)/100*force_bonuses.pctlifesteal
 				end
-				if global.forces[force].bonuses.lifesteal > 0 then
-					event.cause.health = event.cause.health + global.forces[force].bonuses.lifesteal
+				if force_bonuses.lifesteal > 0 then
+					cause.health = cause.health + force_bonuses.lifesteal
 				end
 			end
 		end
-
-
 	end
 end)
 
 script.on_event(defines.events.on_pre_player_died, function(event)
 	local player = game.get_player(event.player_index)
 	local force_name = player.force.name
-	if global.forces[force_name] and global.forces[force_name].bonuses.revive >0 and not global.forces[force_name].item_cooldowns["rpgitems_crusader"] and not global.forces[force_name].item_cooldowns["rpgitems_crusader_spepa"] then
-		local level = math.min(5,global.forces[force_name].bonuses.revive)
+	local force_data = global.forces[force_name]
+	if not (force_data and force_data.bonuses.revive > 0) then return end
+
+	local item_cooldowns = force_data.item_cooldowns
+	if not item_cooldowns["rpgitems_crusader"] and not item_cooldowns["rpgitems_crusader_spepa"] then
+		local level = math.min(5,force_data.bonuses.revive)
 		local cdr = 0
 		if remote.interfaces["spell-pack"] then
-			local players =remote.call("spell-pack","get","players")
+			local players = remote.call("spell-pack","get","players")
 			cdr = players[event.player_index].cdr / 2
 		end
-		global.forces[force_name].item_cooldowns["rpgitems_crusader"] = 300 * (1-cdr)
-		global.forces[force_name].item_cooldowns["rpgitems_crusader_spepa"] = 300 * (1-cdr)
+		local cooldown = 300 * (1-cdr)
+		item_cooldowns["rpgitems_crusader"] = cooldown
+		item_cooldowns["rpgitems_crusader_spepa"] = cooldown
 
-		player.character.health = 1
-		player.character.destructible = false
-		player.surface.create_entity{name = "rpgitems-halo-sticker-"..level, position= player.position, target = player.character}
-		if not global.on_tick[event.tick+level*60] then
-			global.on_tick[event.tick+level*60] = {}
+		local character = player.character
+		if character and character.valid then
+			character.health = 1
+			character.destructible = false
+			player.surface.create_entity{name = "rpgitems-halo-sticker-"..level, position= player.position, target = character}
+			if not global.on_tick[event.tick+level*60] then
+				global.on_tick[event.tick+level*60] = {}
+			end
+			table.insert(global.on_tick[event.tick+level*60], {
+				func = function(vars)
+					vars.char.destructible = true
+				end,
+				vars = {char = character}
+			})
 		end
-		table.insert(global.on_tick[event.tick+level*60], {
-			func = function(vars)
-				vars.char.destructible = true
-			end,
-			vars = {char = player.character}
-		})
 	end
 end)
