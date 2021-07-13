@@ -514,7 +514,7 @@ script.on_nth_tick(60, function(event)
 			if player.character and player.character.valid and global.giveitem_cache[player.index] then
 				for item, cached in pairs(global.giveitem_cache[player.index]) do
 					local in_inventory = player.get_main_inventory().get_item_count(item)
-					if cached >= 1 and in_inventory < 200then
+					if cached >= 1 and in_inventory < 200 then
 						local inserted = player.insert{name=item, count = math.min(200-in_inventory,math.floor(cached))}
 						global.giveitem_cache[player.index][item] = global.giveitem_cache[player.index][item] - inserted
 					end
@@ -544,7 +544,7 @@ script.on_event(defines.events.on_player_main_inventory_changed, function(event)
 		if player.character and player.character.valid and global.giveitem_cache[player.index] then
 			for item, cached in pairs(global.giveitem_cache[player.index]) do
 				local in_inventory = player.get_main_inventory().get_item_count(item)
-				if cached >= 1 and in_inventory < 200then
+				if cached >= 1 and in_inventory < 200 then
 					local inserted = player.insert{name=item, count = math.min(200-in_inventory,math.floor(cached))}
 					global.giveitem_cache[player.index][item] = global.giveitem_cache[player.index][item] - inserted
 				end
