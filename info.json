@@ -8,7 +8,9 @@
   "factorio_version": "1.1",
   "dependencies": [
     "base",
-    "? m-spell-pack"
+    "? m-spell-pack",
+		"! spell-pack",
+		"! rpg_items"
   ],
   "description": "63 items, 30 effects, lots of fun!\nAuthor: OwnlyMe\nModified by ZwerOxotnik"
 }
