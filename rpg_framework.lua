@@ -2,6 +2,17 @@ require "json"
 require "LibDeflate"
 require "base64"
 
+
+--TODO: check
+local function table_length(tbl)
+	local i = 0
+	for _ in pairs(tbl) do
+		i = i + 1
+	end
+	return i
+end
+
+
 script.on_event(defines.events.on_gui_click, function(event)
 	local element = event.element
 	if not (element and element.valid) then return end
@@ -96,7 +107,7 @@ end)
 
 script.on_event(defines.events.on_gui_text_changed, function(event)
 	if event.element.name == "rpgitems_talents_copypaste" then
---		local player = game.players[event.player_index]
+--		local player = game.get_player(event.player_index)
 --		--local unbased,err = pcall(base64.decode,event.element.text)
 --		local unbased = base64.decode(event.element.text)
 --		game.print(unbased)
@@ -125,7 +136,7 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
 --	--local compressed =  LibDeflate:CompressZlib(talents_string,{strategy="fixed"})
 --	--local b64 = base64.encode( compressed)
 --	--copypaste.text = b64
-		local player = game.players[event.player_index]
+		local player = game.get_player(event.player_index)
 		local unbased,unbased_ret = pcall(base64.decode,event.element.text)
 		--local unbased = base64.decode(event.element.parent.rpgitems_talents_copypaste.text)
 		--local unbased =event.element.parent.rpgitems_talents_copypaste.text
@@ -214,7 +225,7 @@ end
 function talents_gui_click(event)
 	if not event.element or not event.element.valid then return end
 	if event.element.parent and event.element.parent.name:sub(1,23) == "rpgitems_talent_choice_" then
-		local player = game.players[event.player_index]
+		local player = game.get_player(event.player_index)
 		local BONUS_TALENTS = global.forces[player.force.name].bonus_talents
 		if event.button == defines.mouse_button_type.left then
 			if event.shift then
@@ -245,14 +256,14 @@ function talents_gui_click(event)
 			talents_gui(p)
 		end
 	elseif event.element.name == "rpgitems_talents_close" then
-		local player = game.players[event.player_index]
+		local player = game.get_player(event.player_index)
 		for _, p in pairs(global.forces[player.force.name].players) do
 			p.gui.center.talents_gui.destroy()
 		end
 		global.talents[player.force.name].ready = true
 		apply_talents(player.force)
 	--elseif event.element.name == "rpgitems_talents_copypaste_button" then
-	--	local player = game.players[event.player_index]
+	--	local player = game.get_player(event.player_index)
 	--	local unbased,unbased_ret = pcall(base64.decode,event.element.parent.rpgitems_talents_copypaste.text)
 	--	--local unbased = base64.decode(event.element.parent.rpgitems_talents_copypaste.text)
 	--	--local unbased =event.element.parent.rpgitems_talents_copypaste.text
@@ -614,26 +625,28 @@ function sort_items(array)
 	return temp
 end
 
-function insert_item (force, item)
-	if not global.items[item].stack_size then
-		table.insert(global.forces[force.name].items, {item = item, count = 1})
+function insert_item(force, item)
+	local force_items = global.forces[force.name].items
+	local stack_size = global.items[item].stack_size
+	if not stack_size then
+		force_items[#force_items+1] = {item = item, count = 1}
 	else
 		local once = false
-		for _, data in pairs(global.forces[force.name].items) do
+		for _, data in pairs(force_items) do
 			if not once then
-				if data.item == item and data.count < global.items[item].stack_size then
+				if data.item == item and data.count < stack_size then
 					data.count = data.count + 1
 					once= true
 				end
 			end
 		end
 		if not once then
-			table.insert(global.forces[force.name].items, {item = item, count = 1})
+			force_items[#force_items+1] = {item = item, count = 1}
 		end
 	end
 end
 
-script.on_nth_tick(21600,function(event) -- every 6 minutes
+script.on_nth_tick(21600, function(event) -- every 6 minutes
 	if not global.forces or global.per_minute then return end
 	for index, data in pairs(global.forces) do
 		local force=game.forces[index]
@@ -1093,11 +1106,12 @@ function recursive_can_insert (force,itemname)
 end
 
 function can_insert_item(force, item)
+	local stack_size = global.items[item].stack_size
 	if table_length(global.forces[force.name].items) < 4+global.forces[force.name].bonus_slots then
 		return true
-	elseif global.items[item].stack_size then
+	elseif stack_size then
 		for _, data in pairs(global.forces[force.name].items) do
-			if data.item == item and (data.count or 1) < (global.items[item].stack_size or 1) then
+			if data.item == item and (data.count or 1) < (stack_size or 1) then
 				return true
 			end
 		end
@@ -1120,15 +1134,16 @@ function get_sell_price(itemname)
 end
 
 function buy_item(force, itemname, only_calculate_price)
+	local force_data = global.forces[force.name]
 	if only_calculate_price then
-		only_calculate_price = deepcopy(global.forces[force.name].items)
+		only_calculate_price = deepcopy(force_data.items)
 	end
 	local price = remove_parts(force,itemname,only_calculate_price)
 	if only_calculate_price then
 		return price
-	elseif global.forces[force.name].money >= price and can_insert_item(force, itemname) then
-		global.forces[force.name].items = sort_items(global.forces[force.name].items)
-		global.forces[force.name].money = global.forces[force.name].money - price
+	elseif force_data.money >= price and can_insert_item(force, itemname) then
+		force_data.items = sort_items(force_data.items)
+		force_data.money = force_data.money - price
 		insert_item(force,itemname)
 		update_items(force)
 	end

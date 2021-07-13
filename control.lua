@@ -298,7 +298,7 @@ end)
 --
 --script.on_event(defines.events.on_player_created, function(event)
 --	if not global.on_tick[event.tick + 1] then global.on_tick[event.tick + 1] = {} end
---	local player = game.players[event.player_index]
+--	local player = game.get_player(event.player_index)
 --	table.insert(global.on_tick[event.tick + 1], function () on_player_created(player) end)
 --
 --end)
@@ -308,8 +308,8 @@ script.on_event({defines.events.on_player_created,defines.events.on_forces_merge
 end)
 --script.on_event(defines.events.on_console_chat, function(event)
 --	if event.message == "gold" then
---		global.forces[game.players[event.player_index].force.name].money = global.forces[game.players[event.player_index].force.name].money+198000
---		game.print(global.forces[game.players[event.player_index].force.name].bonuses.critdamage)
+--		global.forces[game.get_player(event.player_index).force.name].money = global.forces[game.get_player(event.player_index).force.name].money+198000
+--		game.print(global.forces[game.get_player(event.player_index).force.name].bonuses.critdamage)
 --	end
 --end)
 
@@ -540,27 +540,22 @@ script.on_nth_tick(60, function(event)
 end)
 
 script.on_event(defines.events.on_player_main_inventory_changed, function(event)
-	if event.tick%60 ~=0 then
-		local player = game.players[event.player_index]
-		if player.character and player.character.valid and global.giveitem_cache[player.index] then
-			for item, cached in pairs(global.giveitem_cache[player.index]) do
-				local in_inventory = player.get_main_inventory().get_item_count(item)
-				if cached >= 1 and in_inventory < 200 then
-					local inserted = player.insert{name=item, count = math.min(200-in_inventory,math.floor(cached))}
-					global.giveitem_cache[player.index][item] = global.giveitem_cache[player.index][item] - inserted
-				end
-			end
+	if event.tick%60 == 0 then return end -- TODO: check
+
+	local player_index = event.player_index
+	local player = game.get_player(player_index)
+	local player_items_cache = global.giveitem_cache[player_index]
+	if not (player.character and player.character.valid and player_items_cache) then return end
+
+	local inventory = player.get_main_inventory()
+	for item, cached in pairs(player_items_cache) do
+		local in_inventory = inventory.get_item_count(item)
+		if cached >= 1 and in_inventory < 200 then
+			local inserted = player.insert{name = item, count = math.min(200-in_inventory,math.floor(cached))}
+			player_items_cache[item] = player_items_cache[item] - inserted
 		end
 	end
 end)
-
-function table_length(tbl)
-	local i=0
-	for _ in pairs(tbl) do
-		i=i+1
-	end
-	return i
-end
 
 function dbg(str)
 	if str == nil then
@@ -592,12 +587,12 @@ end
 script.on_event(defines.events.on_gui_opened, function(event)
 	if not event.entity  then return end
 	if event.entity.name =="rpgitems-market" then
-		local player = game.players[event.player_index]
+		local player = game.get_player(event.player_index)
 		open_market(player)
 		unlock_items(player)
 	end
 	--if event.entity.name =="rpgitems-item-market" then
-	--	local player = game.players[event.player_index]
+	--	local player = game.get_player(event.player_index)
 	--	local gui = player.gui.center.add{type="frame", name = "rpgitems_item_market", direction = "vertical"}
 	--	itemselector_gui(gui, player)
 	--	player.opened = gui
@@ -612,7 +607,7 @@ end)
 script.on_event(defines.events.on_gui_closed, function(event)
 	if event.element and event.element.name =="rpgitems_market" then
 		event.element.destroy()
-		lock_items(game.players[event.player_index])
+		lock_items(game.get_player(event.player_index))
 	--elseif event.element and event.element.name == "rpgitems_item_market" then
 	--	event.element.destroy()
 	end
@@ -634,7 +629,7 @@ end)
 
 
 script.on_event(defines.events.on_player_died, function(event)
-	local player=game.players[event.player_index]
+	local player=game.get_player(event.player_index)
 	if player.gui.center.rpgitems_market then player.gui.center.rpgitems_market.destroy() end
 end)
 
@@ -730,7 +725,7 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 end)
 
 script.on_event(defines.events.on_pre_player_died, function(event)
-	local player = game.players[event.player_index]
+	local player = game.get_player(event.player_index)
 	local force_name = player.force.name
 	if global.forces[force_name] and global.forces[force_name].bonuses.revive >0 and not global.forces[force_name].item_cooldowns["rpgitems_crusader"] and not global.forces[force_name].item_cooldowns["rpgitems_crusader_spepa"] then
 		local level = math.min(5,global.forces[force_name].bonuses.revive)
