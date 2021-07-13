@@ -10,7 +10,7 @@ data.raw.character.character.healing_per_tick = 0
 data:extend({{
     type = "sprite",
     name = "rpgitemsmarket_close",
-    filename = "__rpg_items__/graphics/close.png",
+    filename = "__m-rpg_items__/graphics/close.png",
     priority = "extra-high-no-scale",
     width = 20,
     height = 20,
@@ -30,7 +30,7 @@ data:extend({{
 	single_particle = true,
 	animation =
     {
-      filename = "__rpg_items__/graphics/stunsticker.png",
+      filename = "__m-rpg_items__/graphics/stunsticker.png",
       line_length = 2,
       width = 62,
       height = 20,
@@ -91,7 +91,7 @@ data:extend({{
 	single_particle = true,
 	animation =
     {
-      filename = "__rpg_items__/graphics/halo.png",
+      filename = "__m-rpg_items__/graphics/halo.png",
       line_length = 5,
       width = 88,
       height = 44,
@@ -109,7 +109,7 @@ data:extend({{
   end
 --data.raw.character.character.tool_attack_result.action_delivery.target_effects.damage.type = "chardamage"
 
---data.raw["gui-style"].default.default_tileset = "__rpg_items__/graphics/gui-new.png"
+--data.raw["gui-style"].default.default_tileset = "__m-rpg_items__/graphics/gui-new.png"
 data.raw["gui-style"].default.rpgitems_yellow_button = {
       type = "button_style",
       parent = "button",
@@ -117,7 +117,7 @@ data.raw["gui-style"].default.rpgitems_yellow_button = {
       {
         base =   {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {0, 0},
 			size = 17,
 			scale = 1
@@ -128,7 +128,7 @@ data.raw["gui-style"].default.rpgitems_yellow_button = {
       {
         base = {
 			border = 1,
-					filename = "__rpg_items__/graphics/gui-new.png",
+					filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {17, 0},
 			size = 17,
 			scale = 1
@@ -140,7 +140,7 @@ data.raw["gui-style"].default.rpgitems_yellow_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {34, 0},
 			size = 17,
 			scale = 1
@@ -160,7 +160,7 @@ data.raw["gui-style"].default.rpgitems_orange_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {51, 0},
 			size = 17,
 			scale = 1
@@ -171,7 +171,7 @@ data.raw["gui-style"].default.rpgitems_orange_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {68, 0},
 			size = 17,
 			scale = 1
@@ -183,7 +183,7 @@ data.raw["gui-style"].default.rpgitems_orange_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {85, 0},
 			size = 17,
 			scale = 1
@@ -203,7 +203,7 @@ data.raw["gui-style"].default.rpgitems_white_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {102, 0},
 			size = 17,
 			scale = 1
@@ -214,7 +214,7 @@ data.raw["gui-style"].default.rpgitems_white_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {119, 0},
 			size = 17,
 			scale = 1
@@ -226,7 +226,7 @@ data.raw["gui-style"].default.rpgitems_white_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {136, 0},
 			size = 17,
 			scale = 1
@@ -246,7 +246,7 @@ data.raw["gui-style"].default.rpgitems_gray_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {153, 0},
 			size = 17,
 			scale = 1
@@ -257,7 +257,7 @@ data.raw["gui-style"].default.rpgitems_gray_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {170, 0},
 			size = 17,
 			scale = 1
@@ -269,7 +269,7 @@ data.raw["gui-style"].default.rpgitems_gray_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {187, 0},
 			size = 17,
 			scale = 1
@@ -280,7 +280,7 @@ data.raw["gui-style"].default.rpgitems_gray_button = {
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {204, 0},
 			size = 17,
 			scale = 1
@@ -300,7 +300,7 @@ data.raw["gui-style"].default.rpgitems_red_bar =
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {0, 17},
 			size = 17,
 			scale = 1
@@ -323,7 +323,7 @@ data.raw["gui-style"].default.rpgitems_green_bar =
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {17, 17},
 			size = 17,
 			scale = 1
@@ -346,7 +346,7 @@ data.raw["gui-style"].default.rpgitems_blue_bar =
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {34, 17},
 			size = 17,
 			scale = 1
@@ -369,7 +369,7 @@ data.raw["gui-style"].default.rpgitems_white_bar =
       {
         base = {
 			border = 1,
-			filename = "__rpg_items__/graphics/gui-new.png",
+			filename = "__m-rpg_items__/graphics/gui-new.png",
 			position = {51, 17},
 			size = 17,
 			scale = 1

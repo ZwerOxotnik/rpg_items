@@ -31,7 +31,7 @@ minable = {mining_time = 1, result = "rpgitems-market"}
 market.order = "zzzz"
 market.picture =
     {
-      filename = "__rpg_items__/graphics/equipment-market.png",
+      filename = "__m-rpg_items__/graphics/equipment-market.png",
       width = 312,
       height = 254,
 	  scale = 0.5,
@@ -54,11 +54,11 @@ local item =  table.deepcopy(data.raw.item["rocket-silo"])
 item.name = "rpgitems-market"
 item.localised_name= "Equipment Market"
 item.place_result = "rpgitems-market"
-item.icon = "__rpg_items__/graphics/market-icon.png"
+item.icon = "__m-rpg_items__/graphics/market-icon.png"
 item.icon_size=144
 --market.picture =
 --    {
---      filename = "__rpg_items__/graphics/market.png",
+--      filename = "__m-rpg_items__/graphics/market.png",
 --      width = 244,
 --      height = 244,
 --      shift = {0.95, 0.2}
