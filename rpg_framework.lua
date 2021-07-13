@@ -1015,8 +1015,6 @@ end
 
 
 function style_item_button(elem)
-	elem.style.width = 30
-	elem.style.height = 30
 	elem.style.top_padding = 0
 	elem.style.right_padding = 0
 	elem.style.left_padding = 0
@@ -1297,8 +1295,8 @@ function create_equipment_gui(player)
 	for i=1,4+global.forces[player.force.name].bonus_slots do
 		local button = table.add{type = "sprite-button", name = "item_"..i, style = "recipe_slot_button"}
 		style_item_button(button)
-		button.style.height = 27
-		button.style.width = 27
+		button.style.natural_height = 32
+		button.style.natural_width = 32
 	end
 
 
