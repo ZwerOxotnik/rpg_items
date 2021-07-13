@@ -115,7 +115,7 @@ script.on_init( function()
 		["t25"]="+0.05 Manareg",
 		["t26"]="+1 Reach Distance",
 		["t27"]="+0.05% Lifesteal",
-		}
+	}
 
 	global.initialized = true
 	global.giveitem_cache = {}
@@ -346,11 +346,12 @@ end)
 --
 --end)
 script.on_event(defines.events.on_tick, function(event)
-	if global.on_tick[event.tick] then
-		for _, tbl in pairs(global.on_tick[event.tick]) do
+	local tick = event.tick
+	if global.on_tick[tick] then
+		for _, tbl in pairs(global.on_tick[tick]) do
 			tbl.func(tbl.vars)
 		end
-		global.on_tick[event.tick]=nil
+		global.on_tick[tick]=nil
 	end
 end)
 
