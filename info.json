@@ -1,0 +1,11 @@
+{
+  "name": "rpg_items",
+  "version": "0.18.9",
+  "title": "RPG Items",
+  "author": "OwnlyMe",
+  "contact": "",
+  "homepage": "",
+  "factorio_version": "0.18",
+  "dependencies": ["base", "?spell-pack"],
+  "description": "rpg items!"
+}
