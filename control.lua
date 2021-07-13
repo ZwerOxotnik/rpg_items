@@ -30,7 +30,7 @@ remote.add_interface("rpg-items", {
 		end
 	  })
 
-function refresh_forces()
+local function refresh_forces()
 	for _, force in pairs(game.forces) do
 		if force.players then
 			if not global.forces[force.name] then
@@ -148,7 +148,7 @@ script.on_init( function()
 			vars = {}
 		})
 	end
-	global.version = 3
+	-- global.version = 3
 end)
 
 script.on_configuration_changed(function()
