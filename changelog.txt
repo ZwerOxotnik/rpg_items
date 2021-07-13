@@ -1,32 +1,60 @@
-0.18.9
-- Fixed a bug when uninstalling mods that add ammo categories or turrets
-
-0.17.8
-- Improved the early game balance:
-- Reduced the starting gold to 16k
-- Increased the price of ore miners to 6k
-- Fixed a bug related to the flame cloak
-
-0.17.7
-- Fixed a crash with melee damage modifiers (deprecated feature)
-
-0.17.6
-- Fixed a crash with armor
-
-0.17.5
-- Fixed a crash with global repairing
-- The market now spawns on the second tick to improve compatibility with other mods that spawn stuff at the beginning of a game
-- Money doesn't grow on trees anymore
-
-0.17.4
-- Better integration with Spell-pack
-- Added an effect type to call other mod's remote interfaces
-(any mod can change the items of this mod and everything else)
-- Fixed clicks on items not registering sometimes
-
-0.17.3
-- Amnesia Book now grants +4 talent points
-
-0.17.2
-- Changed the duration of the crusader buff to 5 seconds
-- Disabled the cheat command
+---------------------------------------------------------------------------------------------------
+Version: 0.19.0
+Date: 2021-07-13
+  Changes:
+    - Improved stability
+    - Fixed several bugs
+    - Slightly optimized
+    - Optimized files
+  Notes:
+    - Updated by ZwerOxotnik
+    - Refactored code
+    - Not all bugs was fixed
+---------------------------------------------------------------------------------------------------
+Version: 0.18.9
+Date: ?-?-?
+  Changes:
+    - Fixed a bug when uninstalling mods that add ammo categories or turrets
+---------------------------------------------------------------------------------------------------
+Version: 0.17.8
+Date: ?-?-?
+  Changes:
+    - Improved the early game balance:
+    - Reduced the starting gold to 16k
+    - Increased the price of ore miners to 6k
+    - Fixed a bug related to the flame cloak
+---------------------------------------------------------------------------------------------------
+Version: 0.17.7
+Date: ?-?-?
+  Changes:
+    - Fixed a crash with melee damage modifiers (deprecated feature)
+---------------------------------------------------------------------------------------------------
+Version: 0.17.6
+Date: ?-?-?
+  Changes:
+    - Fixed a crash with armor
+---------------------------------------------------------------------------------------------------
+Version: 0.17.5
+Date: ?-?-?
+  Changes:
+    - Fixed a crash with global repairing
+    - The market now spawns on the second tick to improve compatibility with other mods that spawn stuff at the beginning of a game
+    - Money doesn't grow on trees anymore
+---------------------------------------------------------------------------------------------------
+Version: 0.17.4
+Date: ?-?-?
+  Changes:
+    - Better integration with Spell-pack
+    - Added an effect type to call other mod's remote interfaces\n(any mod can change the items of this mod and everything else)
+    - Fixed clicks on items not registering sometimes
+---------------------------------------------------------------------------------------------------
+Version: 0.17.3
+Date: ?-?-?
+  Changes:
+    - Amnesia Book now grants +4 talent points
+---------------------------------------------------------------------------------------------------
+Version: 0.17.2
+Date: ?-?-?
+  Changes:
+    - Changed the duration of the crusader buff to 5 seconds
+    - Disabled the cheat command
