@@ -1,18 +1,29 @@
 require "json"
 require "LibDeflate"
 require "base64"
-script.on_event(defines.events.on_gui_click, function(event)
-	if not event.element then return end
 
-	local player_id = event.element.player_index
+script.on_event(defines.events.on_gui_click, function(event)
+	local element = event.element
+	if not (element and element.valid) then return end
+
+	local player_id = element.player_index
 	local player = game.players[player_id]
-	if event.element.name == "rpgitems_bonus_slot" then
+	local force_data = global.forces[player.force.name]
+	local gui_name = element.name
+	local parent_name = element.parent.name
+	local items = nil
+	if element.type == "sprite-button" then
+	 items = global.items[element.sprite]
+	end
+	local item = global.items[gui_name]
+
+	if gui_name == "rpgitems_bonus_slot" then
 		if event.button == defines.mouse_button_type.right then
-			if global.forces[player.force.name].money >= 50000+global.forces[player.force.name].bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value) then
-				global.forces[player.force.name].money = global.forces[player.force.name].money-(50000+global.forces[player.force.name].bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value))
-				global.forces[player.force.name].bonus_slots = global.forces[player.force.name].bonus_slots + 1
-				event.element.number = 50000+global.forces[player.force.name].bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value)
-				for _, p in pairs(global.forces[player.force.name].players) do
+			if force_data.money >= 50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value) then
+				force_data.money = force_data.money-(50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value))
+				force_data.bonus_slots = force_data.bonus_slots + 1
+				element.number = 50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value)
+				for _, p in pairs(force_data.players) do
 					create_equipment_gui(p)
 					if p.gui.center.rpgitems_market then
 						unlock_items(p)
@@ -20,26 +31,26 @@ script.on_event(defines.events.on_gui_click, function(event)
 				end
 			end
 		end
-	elseif global.items[event.element.name] and event.element.parent.name == "market_buy_item" and global.forces[player.force.name].money >= event.element.number then
-		buy_item(player.force, event.element.name)
-		player.gui.left.rpgitems_item_gui.money.caption = math.floor(global.forces[player.force.name].money).."[img=rpgitems-coin]"
+	elseif item and parent_name == "market_buy_item" and force_data.money >= element.number then
+		buy_item(player.force, gui_name)
+		player.gui.left.rpgitems_item_gui.money.caption = math.floor(force_data.money).."[img=rpgitems-coin]"
 		open_market(player)
-	elseif global.items[event.element.name] and event.element.parent.name == "market_table" then
-		if event.button == defines.mouse_button_type.right and global.forces[player.force.name].money >= event.element.number then
-			buy_item(player.force, event.element.name)
-			player.gui.left.rpgitems_item_gui.money.caption = math.floor(global.forces[player.force.name].money).."[img=rpgitems-coin]"
+	elseif item and parent_name == "market_table" then
+		if event.button == defines.mouse_button_type.right and force_data.money >= element.number then
+			buy_item(player.force, gui_name)
+			player.gui.left.rpgitems_item_gui.money.caption = math.floor(force_data.money).."[img=rpgitems-coin]"
 			open_market(player)
 		else
-			open_market(player, event.element.name)
+			open_market(player, gui_name)
 		end
-	elseif event.element.type == "sprite-button" and global.items[event.element.sprite] and event.element.parent.name == "equipment_table" and event.button == defines.mouse_button_type.right and player.gui.center.rpgitems_market then
-		--if global.forces[player.force.name].money > global.items[event.element.name].price and table_length(global.forces[player.force.name]) < 6 then
+	elseif items and parent_name == "equipment_table" and event.button == defines.mouse_button_type.right and player.gui.center.rpgitems_market then
+		--if force_data.money > item.price and table_length(force_data) < 6 then
 			local once = false
-			for i, data in pairs( global.forces[player.force.name].items ) do
+			for i, data in pairs( force_data.items ) do
 				if not once then
-					if data.item ==event.element.sprite then
+					if data.item ==element.sprite then
 						if data.count == 1 then
-							global.forces[player.force.name].items[i] = nil
+							force_data.items[i] = nil
 						else
 							data.count = data.count - 1
 						end
@@ -48,28 +59,28 @@ script.on_event(defines.events.on_gui_click, function(event)
 				end
 			end
 			if once then
-				global.forces[player.force.name].items = sort_items(global.forces[player.force.name].items)
-				global.forces[player.force.name].money = global.forces[player.force.name].money + get_sell_price(event.element.sprite) * 0.8
-				player.gui.left.rpgitems_item_gui.money.caption = math.floor(global.forces[player.force.name].money).."[img=rpgitems-coin]"
+				force_data.items = sort_items(force_data.items)
+				force_data.money = force_data.money + get_sell_price(element.sprite) * 0.8
+				player.gui.left.rpgitems_item_gui.money.caption = math.floor(force_data.money).."[img=rpgitems-coin]"
 				update_items(player.force)
 				open_market(player)
 			end
 		--end
-	elseif event.element.type == "sprite-button" and global.items[event.element.sprite] and event.element.parent.name == "equipment_table" and not player.gui.center.rpgitems_market and (not global.forces[player.force.name].item_cooldowns[event.element.sprite]) then
-		if global.items[event.element.sprite].cooldown then
-			if global.items[event.element.sprite].cooldown > 0 then
-				global.forces[player.force.name].item_cooldowns[event.element.sprite] = global.items[event.element.sprite].cooldown
+	elseif items and parent_name == "equipment_table" and not player.gui.center.rpgitems_market and (not force_data.item_cooldowns[element.sprite]) then
+		if items.cooldown then
+			if items.cooldown > 0 then
+				force_data.item_cooldowns[element.sprite] = items.cooldown
 			end
-			global.items[event.element.sprite].func(player)
-			if global.items[event.element.sprite].consumed then
+			items.func(player)
+			if items.consumed then
 				local once = false
-				for i, data in pairs(global.forces[player.force.name].items) do
+				for i, data in pairs(force_data.items) do
 					if not once then
-						if data.item == event.element.sprite then
+						if data.item == element.sprite then
 							if data.count == 1 then
-								global.forces[player.force.name].items[i] = nil
+								force_data.items[i] = nil
 							else
-								global.forces[player.force.name].items[i].count = data.count-1
+								force_data.items[i].count = data.count-1
 							end
 							once = true
 						end
@@ -341,7 +352,9 @@ end
 function talents_gui(player)
 	local force = player.force
 	local BONUS_TALENTS = global.forces[force.name].bonus_talents
-	if not global.talents[force.name] then global.talents[force.name] = {r={},g={},b={}} end
+	local talents = global.talents
+	if not talents[force.name] then talents[force.name] = {r={},g={},b={}} end
+
 	local verified_talents = verify_talents(force)
 	if player.gui.center.talents_gui then player.gui.center.talents_gui.destroy() end
 	local gui = player.gui.center.add{type="frame",name = "talents_gui", direction="vertical"}
@@ -352,9 +365,9 @@ function talents_gui(player)
 	--copypaste_button.style.width = 50
 	copypaste.style.font="default-tiny-bold"
 	copypaste.style.width = 620
-	local talents_string = encode(global.talents[force.name])
+	local talents_string = encode(talents[force.name])
 	local compressed =  LibDeflate_CompressZlib(talents_string)
-	local b64 = base64.encode( compressed)
+	local b64 = base64.encode(compressed)
 	copypaste.text = b64
 	if verified_talents.total_spent >=28+BONUS_TALENTS*4 then
 		local temp = header_flow.add{type = "sprite-button", name= "rpgitems_talents_close", sprite = "rpgitemsmarket_close"}
@@ -415,7 +428,9 @@ function talents_gui(player)
 	fr.style.height = 250
 	fr.style.width = 175
 	--fr.style.right_margin = -50
-	local i=1
+	local forec_talents = talents[force.name]
+	local talent_localizations = global.talent_localizations
+	local i = 1
 	for name in pairs(global.all_talents.r) do
 		local temp_flow = fr.add{type="flow", name="rpgitems_talent_choice_r_"..i, direction = "horizontal"}
 		local label = temp_flow.add{type="label", name = "l"..i}
@@ -426,31 +441,31 @@ function talents_gui(player)
 		label.style.right_margin = -7
 		label.style.left_margin = 3
 		label.style.top_margin = -1
-		label.caption=global.talents[force.name]["r"][name] or 0
+		label.caption=forec_talents.r[name] or 0
 		local button
-		if verified_talents["r"].spent >= 8+BONUS_TALENTS then
+		if verified_talents.r.spent >= 8+BONUS_TALENTS then
 			if verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS  then
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_gray_button"}
-				if not global.talents[force.name].r[name] or global.talents[force.name].r[name] == 0 then
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
+				if not forec_talents.r[name] or forec_talents.r[name] == 0 then
 					button.enabled = false
 				else
 					filter_clicks(button, "right")
 				end
 			elseif verified_talents["a"] < 4+BONUS_TALENTS then
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_yellow_button"}
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_yellow_button"}
 			else
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_orange_button"}
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_orange_button"}
 			end
 		elseif verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
-			button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_gray_button"}
-			if not global.talents[force.name].r[name] or global.talents[force.name].r[name] == 0 then
+			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
+			if not forec_talents.r[name] or forec_talents.r[name] == 0 then
 				button.enabled = false
 			else
 				filter_clicks(button, "right")
 			end
 		else
-			button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_white_button"}
-			if not global.talents[force.name].r[name] or global.talents[force.name].r[name] == 0 then
+			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_white_button"}
+			if not forec_talents.r[name] or forec_talents.r[name] == 0 then
 				filter_clicks(button, "left")
 			end
 		end
@@ -469,7 +484,7 @@ function talents_gui(player)
 	fg.style.height = 250
 	fg.style.width = 175
 	--fg.style.right_margin = -50
-	local i=1
+	local i = 1
 	for name in pairs(global.all_talents.g) do
 		local temp_flow = fg.add{type="flow", name="rpgitems_talent_choice_g_"..i, direction = "horizontal"}
 		local label = temp_flow.add{type="label", name = "l"..i}
@@ -480,31 +495,31 @@ function talents_gui(player)
 		label.style.right_margin = -7
 		label.style.left_margin = 3
 		label.style.top_margin = -1
-		label.caption=global.talents[force.name]["g"][name] or 0
+		label.caption=talents[force.name]["g"][name] or 0
 		local button
 		if verified_talents["g"].spent >= 8+BONUS_TALENTS then
 			if verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS then
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_gray_button"}
-				if not global.talents[force.name].g[name] or global.talents[force.name].g[name] == 0 then
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
+				if not talents[force.name].g[name] or talents[force.name].g[name] == 0 then
 					button.enabled = false
 				else
 					filter_clicks(button, "right")
 				end
 			elseif verified_talents["a"] < 4+BONUS_TALENTS then
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_yellow_button"}
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_yellow_button"}
 			else
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_orange_button"}
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_orange_button"}
 			end
 		elseif verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
-			button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_gray_button"}
-			if not global.talents[force.name].g[name] or global.talents[force.name].g[name] == 0 then
+			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
+			if not talents[force.name].g[name] or talents[force.name].g[name] == 0 then
 				button.enabled = false
 			else
 				filter_clicks(button, "right")
 			end
 		else
-			button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_white_button"}
-			if not global.talents[force.name].g[name] or global.talents[force.name].g[name] == 0 then
+			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_white_button"}
+			if not talents[force.name].g[name] or talents[force.name].g[name] == 0 then
 				filter_clicks(button, "left")
 			end
 		end
@@ -537,26 +552,26 @@ function talents_gui(player)
 		local button
 		if verified_talents["b"].spent >= 8+BONUS_TALENTS then
 			if verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS then
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_gray_button"}
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
 				if not global.talents[force.name].b[name] or global.talents[force.name].b[name] == 0 then
 					button.enabled = false
 				else
 					filter_clicks(button, "right")
 				end
 			elseif verified_talents["a"] < 4+BONUS_TALENTS then
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_yellow_button"}
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_yellow_button"}
 			else
-				button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_orange_button"}
+				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_orange_button"}
 			end
 		elseif verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
-			button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_gray_button"}
+			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
 			if not global.talents[force.name].b[name] or global.talents[force.name].b[name] == 0 then
 				button.enabled = false
 			else
 				filter_clicks(button, "right")
 			end
 		else
-			button = temp_flow.add{type="button", name = name, caption = global.talent_localizations[name], style="rpgitems_white_button"}
+			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_white_button"}
 			if not global.talents[force.name].b[name] or global.talents[force.name].b[name] == 0 then
 				filter_clicks(button, "left")
 			end
@@ -570,7 +585,6 @@ function talents_gui(player)
 		button.style.top_padding = -2
 		i=i+1
 	end
-
 end
 
 
@@ -1319,16 +1333,16 @@ function create_equipment_gui(player)
 end
 
 function deepcopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[deepcopy(orig_key)] = deepcopy(orig_value)
-        end
-        setmetatable(copy, deepcopy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
+		local orig_type = type(orig)
+		local copy
+		if orig_type == 'table' then
+				copy = {}
+				for orig_key, orig_value in next, orig, nil do
+						copy[deepcopy(orig_key)] = deepcopy(orig_value)
+				end
+				setmetatable(copy, deepcopy(getmetatable(orig)))
+		else -- number, string, boolean, etc
+				copy = orig
+		end
+		return copy
 end
