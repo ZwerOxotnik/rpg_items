@@ -5,6 +5,8 @@ RPG Items
 
 **Original mod**: https://mods.factorio.com/mod/rpg_items
 
+**Translations**:https://crowdin.com/project/factorio-mods-localization
+
 There are 63 items in the mod featuring 30 different effects.\
 It is multiplayer compatible but the items are force-wide. (That's the only way of doing it bug-free)\
 The market can be built (pretty expensive) but you get a free market on new games.\
