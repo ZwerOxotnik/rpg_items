@@ -3,7 +3,7 @@ require "LibDeflate"
 require "base64"
 script.on_event(defines.events.on_gui_click, function(event)
 	if not event.element then return end
-	--game.print(event.tick.." "..event.element.name)
+
 	local player_id = event.element.player_index
 	local player = game.players[player_id]
 	if event.element.name == "rpgitems_bonus_slot" then
@@ -109,7 +109,7 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
 --			player.print("base64 failed")
 --		end
 --
---		
+--
 --	--local talents_string = encode(global.talents[player.index])
 --	--local compressed =  LibDeflate:CompressZlib(talents_string,{strategy="fixed"})
 --	--local b64 = base64.encode( compressed)
@@ -204,7 +204,7 @@ function talents_gui_click(event)
 					else
 						global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] = (global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] or 0) + 1
 					end
-					
+
 				end
 			else
 				local verified_talents = verify_talents(player.force)
@@ -312,7 +312,7 @@ function verify_talents(force)
 				--over_spent= over_spent-spare
 				--data.width = data.width - spare
 				data.width = data.width-(8+BONUS_TALENTS-data.spent)/remaining_points_till_8*over_spent
-				
+
 			end
 		end
 	end
@@ -409,7 +409,7 @@ function talents_gui(player)
 	tbl.style.left_cell_padding = 0
 	tbl.style.width=652
 	tbl.style.horizontal_spacing = 5
-	
+
 	local fr = tbl.add{type="flow", name = "r", direction = "vertical"}
 	remove_margin_padding(fr)
 	fr.style.height = 250
@@ -463,7 +463,7 @@ function talents_gui(player)
 
 		i=i+1
 	end
-	
+
 	local fg = tbl.add{type="flow", name = "g", direction = "vertical"}
 	remove_margin_padding(fg)
 	fg.style.height = 250
@@ -516,7 +516,7 @@ function talents_gui(player)
 		button.style.top_padding = -2
 		i=i+1
 	end
-	
+
 	local fb = tbl.add{type="flow", name = "b", direction = "vertical"}
 	remove_margin_padding(fb)
 	fb.style.height = 250
@@ -561,7 +561,7 @@ function talents_gui(player)
 				filter_clicks(button, "left")
 			end
 		end
-		
+
 		remove_margin_padding(button)
 		button.style.height = 20
 		button.style.width = 185
@@ -570,7 +570,7 @@ function talents_gui(player)
 		button.style.top_padding = -2
 		i=i+1
 	end
-	
+
 end
 
 
@@ -657,7 +657,7 @@ function remove_modifier(force, modifier, mult)
 	if modifier.type == "force" then
 		if modifier.modifier == "gun_speed_modifier" then
 			if not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do 
+				for a in pairs(game.ammo_category_prototypes) do
 					local new_mod = math.max(0,force.get_gun_speed_modifier(a) - modifier.value*mult)
 					if new_mod < 0.00000001 then
 						new_mod = 0
@@ -781,7 +781,7 @@ function add_modifier(force, modifier, mult)
 			end
 		elseif modifier.modifier =="ammo_damage_modifier" then
 			if not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do 
+				for a in pairs(game.ammo_category_prototypes) do
 					force.set_ammo_damage_modifier(a, math.max(0,force.get_ammo_damage_modifier(a) + modifier.value*mult))
 				end
 				--global.forces[force.name].bonuses.chardamage_mult = global.forces[force.name].bonuses.chardamage_mult +modifier.value*mult
@@ -1052,12 +1052,12 @@ function recursive_can_insert (force,itemname)
 							removed_amount = removed_amount +1
 						else
 							local temp = math.min(data.count, part.count-removed_amount)
-							
+
 							--data.count = data.count - temp
 							if data.count == temp then
 								cleared_slots = cleared_slots + 1
 							end
-							
+
 							removed_amount = removed_amount + temp
 						end
 					end
@@ -1103,7 +1103,7 @@ function buy_item(force, itemname, only_calculate_price)
 		only_calculate_price = deepcopy(global.forces[force.name].items)
 	end
 	local price = remove_parts(force,itemname,only_calculate_price)
-	if only_calculate_price then 
+	if only_calculate_price then
 		return price
 	elseif global.forces[force.name].money >= price and can_insert_item(force, itemname) then
 		global.forces[force.name].items = sort_items(global.forces[force.name].items)
@@ -1134,34 +1134,34 @@ function open_market(player, selected_item)
 		end
 	end
 	for name, data in pairs(global.items) do
-		if (not excluded_items[name] or global.items[name].always_show_in_main_list) 
-		and 
+		if (not excluded_items[name] or global.items[name].always_show_in_main_list)
+		and
 		(
-			not global.items[name].requires 
-			or 
+			not global.items[name].requires
+			or
 			(
-				game.active_mods[global.items[name].requires] 
-				and 
+				game.active_mods[global.items[name].requires]
+				and
 				(
 					not global.items[name].andversion
 					or tonumber(game.active_mods[global.items[name].requires]:sub(-2)) >= global.items[name].andversion
 				)
 			)
 		)
-		and 
+		and
 		(
-			not global.items[name].conflicts 
-			or not 
+			not global.items[name].conflicts
+			or not
 			(
-				game.active_mods[global.items[name].conflicts] 
-				and 
+				game.active_mods[global.items[name].conflicts]
+				and
 				(
 					not global.items[name].andversion
 					or tonumber(game.active_mods[global.items[name].conflicts]:sub(-2)) >= global.items[name].andversion
 				)
 			)
 		)
-		and (not data.tech_requirement or player.force.technologies[data.tech_requirement].researched) 
+		and (not data.tech_requirement or player.force.technologies[data.tech_requirement].researched)
 		then
 			local button
 			if name == "rpgitems_bonus_slot" then
@@ -1252,7 +1252,7 @@ function add_parts_to_gui(force,item, gui, amount)
 			add_parts_to_gui(force,part.name, partstable, part.count)
 		end
 	end
-			
+
 
 end
 function create_equipment_gui(player)
@@ -1277,8 +1277,8 @@ function create_equipment_gui(player)
 		button.style.height = 27
 		button.style.width = 27
 	end
-	
-	
+
+
 	local i=1
 	for _, data in pairs(global.forces[player.force.name].items) do
 		player.gui.left.rpgitems_item_gui.equipment_table["item_"..i].sprite = data.item

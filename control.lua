@@ -3,8 +3,8 @@ require("rpg_framework")
 
 remote.add_interface("rpg-items", {
 		get = function(field) return global[field] end,
-		set = function(field, value) 
-			global[field] = value 
+		set = function(field, value)
+			global[field] = value
 		end,
 		add_gold = function(force, value)
 			if not global.forces[force.name] then return false end
@@ -25,7 +25,7 @@ remote.add_interface("rpg-items", {
 			end
 		end
 	  })
-	  
+
 function refresh_forces()
 	for _, force in pairs(game.forces) do
 		if force.players then
@@ -33,7 +33,7 @@ function refresh_forces()
 				global.forces[force.name] = {players = {}, color = force, research = {}, money = 16000, bonuses = {income = 1, crit = 0, critdamage = 0, armor = 0, thorns = 0, regen = 1.5, chardamage = 0, chardamage_mult = 1, repair = 0, pctregen = 0, lifesteal = 0, pctlifesteal = 0, energy = 0, revive = 0, stun = 0, momentum = 0,immolation = 0}, bonus_talents = 0, giveitem={}, modifiers = {},talent_modifiers = {}, items = {}, item_cooldowns = {}, bonus_slots = 0}
 			end
 		end
-		
+
 		if global.forces[force.name] then
 			global.forces[force.name].players = force.players
 			for _, player in pairs(global.forces[force.name].players) do
@@ -62,7 +62,7 @@ script.on_init( function()
 		["t9"] = {type = "other", modifier = "thorns", value = 0.005, periodical = 0},
 		["t27"] = {type = "other", modifier = "lifesteal", value = 0.05},
 	},
-	g={	
+	g={
 		["t10"] = {type = "other", modifier = "income", value = 0.05},
 		["t11"] = {type = "force", modifier = "character_health_bonus", value = 10},
 		["t12"] = {type = "force", modifier = "character_health_bonus", value = 0.1, periodical = 0},
@@ -72,7 +72,7 @@ script.on_init( function()
 		["t16"] = {type = "other", modifier = "armor", value = 0.01, periodical = 0},
 		["t17"] = {type = "force", modifier = "character_running_speed_modifier", value = 0.02},
 	},
-	b={	
+	b={
 		["t18"] = {type = "force", modifier = "manual_mining_speed_modifier", value = 0.1},
 		["t19"] = {type = "force", modifier = "manual_crafting_speed_modifier", value = 0.05},
 		["t20"] = {type = "force", modifier = "character_inventory_slots_bonus", value = 1},
@@ -104,7 +104,7 @@ script.on_init( function()
 		["t14"]="+0.03 HP/s/hour",
 		["t15"]="+1 Armor",
 		["t16"]="+0.1 Armor/hour",
-		["t17"]="+2% Running speed",	
+		["t17"]="+2% Running speed",
 		["t18"]="+10% Mining Speed",
 		["t19"]="+5% Crafting Speed",
 		["t20"]="+1 Inventory Slot",
@@ -199,7 +199,7 @@ script.on_configuration_changed(function()
 							players[player.index][modifier.modifier] = new_mod
 						end
 						remote.call("spell-pack","set","players",players)
-						
+
 						if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
 							remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 						else
@@ -220,7 +220,7 @@ script.on_configuration_changed(function()
 							players[player.index][modifier.modifier] = new_mod
 						end
 						remote.call("spell-pack","set","players",players)
-						
+
 						if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
 							remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 						else
@@ -292,7 +292,7 @@ script.on_configuration_changed(function()
 end)
 
 --function on_player_created(player)
---	
+--
 --	refresh_forces()
 --end
 --
@@ -416,7 +416,7 @@ script.on_nth_tick(6, function(event)
 					remaining_electricity = remaining_electricity - used_electricity
 				end
 			end
-		end	
+		end
 
 		local force_name = player.force.name
 		if global.forces[force_name] and global.forces[force_name].bonuses.momentum > 0 and player.character and player.character.valid then
@@ -465,7 +465,7 @@ end
 script.on_nth_tick(25, function(event)
 	for _, player in pairs(game.players) do
 		if global.immolation [player.index] then
-			local immolation_bonus = global.forces[player.force.name].bonuses.immolation 
+			local immolation_bonus = global.forces[player.force.name].bonuses.immolation
 			if immolation_bonus > 0 and player.character and player.character.valid then
 				local enemies = player.surface.find_entities_filtered{type = {"unit", "character"}, position = player.position, radius = 6}
 				local damage_mult = player.force.get_ammo_damage_modifier("flamethrower")+1
@@ -520,11 +520,11 @@ script.on_nth_tick(60, function(event)
 					end
 				end
 			end
-			
+
 		end
 	end
 	for id, entity in pairs(global.repairing) do
-		
+
 		if not entity or not entity.valid then
 			global.repairing[id] = nil
 		else
@@ -534,7 +534,7 @@ script.on_nth_tick(60, function(event)
 			else
 				entity.health = entity.health + entity.prototype.max_health/100*global.forces[force_name].bonuses.repair
 			end
-		end	
+		end
 	end
 end)
 
@@ -569,7 +569,7 @@ function dbg(str)
 			if str == true then
 				str = "true"
 			else
-				str = "false" 
+				str = "false"
 			end
 		else
 			str=type(str)
@@ -628,7 +628,7 @@ script.on_event(defines.events.on_entity_died, function(event)
 			player.gui.left.rpgitems_item_gui.money.caption = math.floor(global.forces[force].money).."[img=rpgitems-coin]"
 		end
 	end
-	
+
 end)
 
 
@@ -653,7 +653,7 @@ function apply_armor (event, armor)
 		bonus_healing = math.min(event.final_damage_amount, shield_healing)
 		shield_healing = shield_healing - bonus_healing
 		shield_healing = math.min(shield_healing,grid.max_shield - grid.shield)
-		
+
 		local missing_shield = grid.max_shield - grid.shield
 		if missing_shield > 0 then
 			for a, eq in pairs(grid.equipment) do
@@ -680,7 +680,7 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 			end
 			--if event.damage_type.name:sub(1,4)=="osp_" then
 			--	local mres = global.forces[player.force.name].bonuses.magic_resistance /(global.forces[player.force.name].bonuses.magic_resistance+100)
-			--	event.entity.health = event.entity.health + event.final_damage_amount*mres	
+			--	event.entity.health = event.entity.health + event.final_damage_amount*mres
 			--else
 				local armor = global.forces[force.name].bonuses.armor /(global.forces[force.name].bonuses.armor+100)
 				apply_armor(event,armor)
@@ -723,8 +723,8 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 				end
 			end
 		end
-	
-	
+
+
 	end
 end)
 
@@ -740,7 +740,7 @@ script.on_event(defines.events.on_pre_player_died, function(event)
 		end
 		global.forces[force_name].item_cooldowns["rpgitems_crusader"] = 300 * (1-cdr)
 		global.forces[force_name].item_cooldowns["rpgitems_crusader_spepa"] = 300 * (1-cdr)
-		
+
 		player.character.health = 1
 		player.character.destructible = false
 		player.surface.create_entity{name = "rpgitems-halo-sticker-"..level, position= player.position, target = player.character}
