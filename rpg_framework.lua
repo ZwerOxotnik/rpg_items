@@ -163,10 +163,11 @@ function remove_margin_padding(elem)
 		elem.style.bottom_padding = 0
 end
 function apply_talents(force)
+	local force_data = global.forces[force.name]
 	--if not global.forces[force.name] then return end
 	--if not global.talents[player.force.name].ready then return end
 	local store_periodical = {}
-	for _, mod in pairs(global.forces[force.name].talent_modifiers) do
+	for _, mod in pairs(force_data.talent_modifiers) do
 		local mult = 1
 		if mod.periodical then
 			mult = mod.periodical
@@ -174,21 +175,29 @@ function apply_talents(force)
 		end
 		remove_modifier(force,mod,mult)
 	end
-	global.forces[force.name].talent_modifiers = {}
+	force_data.talent_modifiers = {}
 	local talent_modifiers = {}
 	for rgb, data in pairs(global.talents[force.name]) do
-		if rgb ~="ready" then
-		for id, amount in pairs(data) do
-			local temp_mod = deepcopy(global.all_talents[rgb][id])
-			if temp_mod.value then
-				temp_mod.value = temp_mod.value * amount
-			elseif temp_mod.per_second then
-				temp_mod.per_second = temp_mod.per_second * amount
+		if rgb ~= "ready" then
+			local talents = global.all_talents[rgb]
+			for id, amount in pairs(data) do
+				local temp_mod = deepcopy(talents[id])
+				if temp_mod then -- TODO: check
+					if temp_mod.value then
+						temp_mod.value = temp_mod.value * amount
+					elseif temp_mod.per_second then
+						temp_mod.per_second = temp_mod.per_second * amount
+					end
+					table.insert(talent_modifiers, temp_mod)
+				else
+					game.print("Unexpected error")
+					log("Error, no data")
+				end
 			end
-			table.insert(talent_modifiers, temp_mod)
-		end
 		end
 	end
+
+	local force_talent_modifiers = force_data.talent_modifiers
 	for _, modifier in pairs(talent_modifiers) do
 		local mult = 1
 		if modifier.periodical then
@@ -199,7 +208,7 @@ function apply_talents(force)
 			end
 		end
 		add_modifier(force,modifier,mult)
-		table.insert(global.forces[force.name].talent_modifiers, modifier)
+		force_talent_modifiers[#force_talent_modifiers + 1] = modifier
 	end
 end
 function talents_gui_click(event)
