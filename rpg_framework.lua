@@ -26,12 +26,15 @@ script.on_event(defines.events.on_gui_click, function(event)
 	local force = player.force
 	local force_data = global.forces[player.force.name]
 	local gui_name = element.name
-	local parent_name = element.parent.name
 	local items = nil
 	if element.type == "sprite-button" then
-	 items = global.items[element.sprite]
+		items = global.items[element.sprite]
 	end
 	local item = global.items[gui_name]
+	local parent_name = ""
+	if element.parent then
+		parent_name = element.parent.name
+	end
 
 	if gui_name == "rpgitems_bonus_slot" then
 		if event.button == defines.mouse_button_type.right then
