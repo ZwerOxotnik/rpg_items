@@ -884,27 +884,26 @@ function make_items()
 	end
 end
 
-function capitalize(str)
-	return (str:gsub("^%l", string.upper))
-end
+-- local function capitalize(str)
+-- 	return (str:gsub("^%l", string.upper))
+-- end
 
 function make_description(data)
-	-- TODO: rework
-	local localization = {
-		["iron-ore"] = "Iron ore",
-		["iron-plate"] = "Iron plate",
-		["steel-plate"] = "Steel plate",
-		["copper-ore"] = "Copper ore",
-		["copper-plate"] = "Copper plate",
-		["coal"] = "Coal",
-		["stone"] = "Stone",
-		["stone-brick"] = "Stone brick",
-		["uranium-ore"] = "Uranium ore",
-		["firearm-magazine"] = "Firearm magazine",
-		["piercing-rounds-magazine"] = "Piercing rounds magazine",
-		["uranium-rounds-magazine"] = "Uranium rounds magazine",
-		["character"] = "Player"
-	}
+	-- local localization = {
+	-- 	["iron-ore"] = "Iron ore",
+	-- 	["iron-plate"] = "Iron plate",
+	-- 	["steel-plate"] = "Steel plate",
+	-- 	["copper-ore"] = "Copper ore",
+	-- 	["copper-plate"] = "Copper plate",
+	-- 	["coal"] = "Coal",
+	-- 	["stone"] = "Stone",
+	-- 	["stone-brick"] = "Stone brick",
+	-- 	["uranium-ore"] = "Uranium ore",
+	-- 	["firearm-magazine"] = "Firearm magazine",
+	-- 	["piercing-rounds-magazine"] = "Piercing rounds magazine",
+	-- 	["uranium-rounds-magazine"] = "Uranium rounds magazine",
+	-- 	["character"] = "Player"
+	-- }
 	local raw_data = {}
 	for _, effect in pairs(data.effects) do
 		if effect.unique then
@@ -916,100 +915,107 @@ function make_description(data)
 				if effect.ammo then
 					raw_data[#raw_data+1] = effect.ammo .. " "
 				end
-				raw_data[#raw_data+1] = "Damage"
+				raw_data[#raw_data+1] = {"description.damage"}
 			elseif effect.modifier == "gun_speed_modifier" then
 				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
 				if effect.ammo then
 					raw_data[#raw_data+1] = effect.ammo .. " "
 				end
-				raw_data[#raw_data+1] = "Attackspeed"
+				raw_data[#raw_data+1] = {"gui-bonus.shooting-speed-bonus"}
 			elseif effect.modifier == "character_running_speed_modifier" then
 				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
-				raw_data[#raw_data+1] = "Movement speed"
+				raw_data[#raw_data+1] = {"description.character-movement-speed-modifier"}
 			elseif effect.modifier == "character_health_bonus" then
 				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " Health (character)"
 			elseif effect.modifier == "manual_mining_speed_modifier" then
 				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
-				raw_data[#raw_data+1] = "Mining speed"
+				raw_data[#raw_data+1] = {"gui-bonus.character-mining-speed"}
 			elseif effect.modifier == "manual_crafting_speed_modifier" then
 				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
-				raw_data[#raw_data+1] = "Crafting speed"
+				raw_data[#raw_data+1] = {"gui-bonus.character-crafting-speed"}
 			elseif effect.modifier == "character_inventory_slots_bonus" then
 				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " "
-				raw_data[#raw_data+1] = "Inventory slots"
+				raw_data[#raw_data+1] = {"gui-bonus.character-inventory-slots-bonus"}
 			elseif effect.modifier == "character_reach_distance_bonus" then
 				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " "
-				raw_data[#raw_data+1] = "Reach distance"
+				raw_data[#raw_data+1] = {"gui-bonus.character-reach-distance"}
 			elseif effect.modifier == "turret_attack_modifier" then
 				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
 				if effect.turret then
-					raw_data[#raw_data+1] = (localization[effect.turret] or capitalize(effect.turret))
+					raw_data[#raw_data+1] = {"entity-name." .. effect.turret} --(localization[effect.turret] or capitalize(effect.turret))
 				else
-					raw_data[#raw_data+1] = "Turret"
+					raw_data[#raw_data+1] = {"tooltip-category.turret"}
 				end
-				raw_data[#raw_data+1] = " damage"
+				raw_data[#raw_data+1] = {"", " ", {"description.damage"}}
 			else
 				raw_data[#raw_data+1] = "+" .. effect.value .. " " .. effect.modifier .. "(???)"
 			end
 		elseif effect.type == "giveitem" then
-			raw_data[#raw_data+1] = "+" .. effect.per_second .. " " .. (localization[effect.item] or effect.item)
-			if effect.per_second ~= 1 and localization[effect.item] and
-							(localization[effect.item]:sub(-5, -1) == "plate" or localization[effect.item]:sub(-5, -1) == "brick" or
-											localization[effect.item]:sub(-8, -1) == "magazine") then
-				raw_data[#raw_data+1] = "s"
+			if effect.turret then
+				-- It's not so correct actually but it seems fine
+				raw_data[#raw_data+1] = {"", "+" .. effect.per_second .. " ", {"entity-name." .. effect.turret}}
+				--(localization[effect.turret] or capitalize(effect.turret))
+			elseif effect.item then
+				raw_data[#raw_data+1] = {"", "+" .. effect.per_second .. " ", {"item-name." .. effect.item}}
 			end
-			raw_data[#raw_data+1] = " per second"
+				-- raw_data[#raw_data+1] = "+" .. effect.per_second .. " " .. (localization[effect.item] or effect.item)
+			-- if effect.per_second ~= 1 and localization[effect.item] and
+			-- 				(localization[effect.item]:sub(-5, -1) == "plate" or localization[effect.item]:sub(-5, -1) == "brick" or
+			-- 								localization[effect.item]:sub(-8, -1) == "magazine") then
+			-- 	raw_data[#raw_data+1] = "s"
+			-- end
+			-- raw_data[#raw_data+1] = " per second"
 		elseif effect.type == "other" then
 			if effect.modifier == "income" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Gold per second"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.income", effect.value}
 			elseif effect.modifier == "crit" then
-				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Crit"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.crit", effect.value * 100}
 			elseif effect.modifier == "critdamage" then
-				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Crit-damage"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.critdamage", effect.value * 100}
 			elseif effect.modifier == "armor" then
-				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " Armor (character)"
+				raw_data[#raw_data+1] = {"", "+" .. floor(effect.value) .. " ", {"gui.armor"}, '(', {"gui.character"}, ')'}
 			elseif effect.modifier == "thorns" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Thorns damage (character)"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.income", effect.value, {"gui.character"}}
 			elseif effect.modifier == "regen" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " HP/s (character)"
-			elseif effect.modifier == "towerhp" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Tower HP"
-			elseif effect.modifier == "chardamage" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Melee damage"
-			elseif effect.modifier == "repair" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. "% Global repairs/s"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.regen", effect.value, {"gui.character"}}
 			elseif effect.modifier == "pctregen" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. "% HP/s (character)"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.pctregen", effect.value, {"gui.character"}}
+			elseif effect.modifier == "towerhp" then
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.towerhp", effect.value}
+			elseif effect.modifier == "chardamage" then
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.chardamage", effect.value}
+			elseif effect.modifier == "repair" then
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.repair", effect.value}
 			elseif effect.modifier == "lifesteal" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Life stolen per hit (character)"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.lifesteal", effect.value, {"gui.character"}}
 			elseif effect.modifier == "pctlifesteal" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. "% Lifesteal (character)"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.pctlifesteal", effect.value, {"gui.character"}}
 			elseif effect.modifier == "energy" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " kW energy production (character/vehicle)"
+				raw_data[#raw_data+1] ={"rpg-items-bonuses.energy", effect.value, {"gui.character"}, {"tooltip-category.vehicle"}}
 			elseif effect.modifier == "revive" then
-				raw_data[#raw_data+1] = "Instead of dying, you become invulnerable for " .. effect.value .. " seconds (300s cooldown)"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.revive", effect.value}
 			elseif effect.modifier == "stun" then
-				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Stun chance"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.cdr", effect.value * 100}
 			elseif effect.modifier == "momentum" then
 				-- descr = descr.."While moving, your movement speed stacks up every 2 seconds, up to 10 times"
-				raw_data[#raw_data+1] = "Running increases your movement speed every second, up to 5 times"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.momentum"}
 			elseif effect.modifier == "immolation" then
 				-- descr = descr.."While moving, your movement speed stacks up every 2 seconds, up to 10 times"
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Aura damage/s (+flamethrower modifiers) (toggleable)"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.immolation", effect.value}
 			else
 				raw_data[#raw_data+1] = "+" .. effect.value .. " " .. effect.modifier .. "(???)"
 			end
 		elseif effect.type == "spellpack" then
 			if effect.modifier == "cdr" then
-				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Cooldown reduction"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.cdr", effect.value * 100}
 			elseif effect.modifier == "max_mana" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Mana"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.max_mana", effect.value}
 			elseif effect.modifier == "max_spirit" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Spirit"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.max_spirit", effect.value}
 			elseif effect.modifier == "mana_reg" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Mana/s"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.mana_reg", effect.value}
 			elseif effect.modifier == "spirit_reg" then
-				raw_data[#raw_data+1] = "+" .. effect.value .. " Spirit/s"
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.spirit_reg", effect.value}
 			end
 		elseif effect.type == "remotecall" then
 			raw_data[#raw_data+1] = effect.description

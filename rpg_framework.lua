@@ -978,7 +978,7 @@ end
 
 function update_items(force)
 	local force_data = global.forces[force.name]
-	local stacks = remove_modifiers(force,force_data.modifiers)
+	local stacks = remove_modifiers(force, force_data.modifiers)
 	force_data.modifiers = {}
 	local items = global.items
 	for _, data in pairs(force_data.items) do
@@ -987,18 +987,20 @@ function update_items(force)
 			stacks = add_modifiers(force, item.effects, stacks)
 		end
 	end
+
 	for _, player in pairs(force_data.players) do
-		local force_data = global.forces[player.force.name]
-		if #player.gui.left.rpgitems_item_gui.equipment_table.children ~= 4+force_data.bonus_slots then
+		local _force_data = global.forces[player.force.name]
+		local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
+		if #equipment_table.children ~= 4+_force_data.bonus_slots then
 			create_equipment_gui(player)
 		end
 		local i = 1
-		local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
 		for _, data in pairs(force_data.items) do
 			local item = items[data.item]
 			local gui = equipment_table["item_"..i]
 			gui.sprite = data.item
-			gui.tooltip = {"", data.name, "\n\n", data.description}
+			local item_data = global.items[data.item]
+			gui.tooltip = {"", item_data.name, "\n\n", item_data.description}
 			if item.stack_size then
 				gui.number = data.count
 			else
@@ -1023,7 +1025,7 @@ function update_items(force)
 			i=i+1
 		end
 
-		for j=i, 4+force_data.bonus_slots do
+		for j=i, 4+_force_data.bonus_slots do
 			local gui = equipment_table["item_"..j]
 			gui.sprite = "transparent32"
 			gui.tooltip = ""
