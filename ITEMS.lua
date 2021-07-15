@@ -1,9 +1,12 @@
+local ceil = math.ceil
+local floor = math.floor
+
 function make_items()
 	global.items = {
 		["rpgitems_health_potion"] = {
 			effects = {},
-			name = "[Potion]",
-			description = "Regenerates 90 HP over 15 seconds",
+			name = {"", "[", {"rpg-items.potion"}, "]"},
+			description = {"rpg-items-description.potion"},
 			price = 250,
 			stack_size = 10,
 			cooldown = 30,
@@ -11,10 +14,11 @@ function make_items()
 			always_show_in_main_list = true,
 			func = function(player)
 				for i = 1, 900 do
-					if not global.on_tick[game.tick + i] then
-						global.on_tick[game.tick + i] = {}
+					local tick = game.tick + i
+					if not global.on_tick[tick] then
+						global.on_tick[tick] = {}
 					end
-					table.insert(global.on_tick[game.tick + i], {
+					table.insert(global.on_tick[tick], {
 						func = function(vars)
 							if vars.player.character and vars.player.character.health > 0 then
 								vars.player.character.health = vars.player.character.health + 0.1
@@ -27,8 +31,8 @@ function make_items()
 		},
 		["rpgitems_mana_potion"] = {
 			effects = {},
-			name = "[Mana Potion]",
-			description = "Regenerates 30 Mana over 15 seconds",
+			name = {"", "[", {"rpg-items.mana_potion"}, "]"},
+			description = {"rpg-items-description.mana_potion"},
 			price = 250,
 			stack_size = 10,
 			cooldown = 30,
@@ -38,10 +42,11 @@ function make_items()
 			always_show_in_main_list = true,
 			func = function(player)
 				for i = 1, 30 do
-					if not global.on_tick[game.tick + i * 30] then
-						global.on_tick[game.tick + i * 30] = {}
+					local tick = game.tick + i * 30
+					if not global.on_tick[tick] then
+						global.on_tick[tick] = {}
 					end
-					table.insert(global.on_tick[game.tick + i * 30], {
+					table.insert(global.on_tick[tick], {
 						func = function(vars)
 							if remote.interfaces["spell-pack"] then
 								local players = remote.call("spell-pack", "get", "players")
@@ -57,8 +62,8 @@ function make_items()
 		},
 		["rpgitems_amnesia_book"] = {
 			effects = {},
-			name = "[Book of amnesia]",
-			description = "Allows you to reset your talents\nGrants +4 talent points (RGBW)\nChanged per hour bonuses will start from 0!",
+			name = {"", "[", {"rpg-items.amnesia_book"}, "]"},
+			description = {"rpg-items-description.amnesia_book"},
 			price = 35000,
 			stack_size = 1,
 			cooldown = 30,
@@ -74,7 +79,7 @@ function make_items()
 		},
 		["rpgitems_shoes"] = {
 			effects = {{type = "force", modifier = "character_running_speed_modifier", value = 0.2, unique = "Shoes"}},
-			name = "[Boots]",
+			name = {"", "[", {"rpg-items.shoes"}, "]"},
 			price = 10000,
 			stack_size = nil,
 			cooldown = nil,
@@ -84,33 +89,33 @@ function make_items()
 		["rpgitems_boots_0"] = {
 			effects = {
 				{type = "force", modifier = "character_running_speed_modifier", value = 0.3, unique = "Shoes"},
-					{type = "other", modifier = "momentum", value = 1, unique = "Momentum"}
+				{type = "other", modifier = "momentum", value = 1, unique = "Momentum"}
 			},
-			name = "[Boots of Swiftness]",
+			name = {"", "[", {"rpg-items.boots_0"}, "]"},
 			price = 30000,
 			parts = {{name = "rpgitems_shoes", count = 1}}
 		},
 		["rpgitems_boots_1"] = {
 			effects = {
 				{type = "other", modifier = "armor", value = 20},
-					{type = "force", modifier = "character_running_speed_modifier", value = 0.3, unique = "Shoes"}
+				{type = "force", modifier = "character_running_speed_modifier", value = 0.3, unique = "Shoes"}
 			},
-			name = "[Knight's armored Boots]",
+			name = {"", "[", {"rpg-items.boots_1"}, "]"},
 			price = 12000,
 			parts = {{name = "rpgitems_shoes", count = 1}, {name = "rpgitems_armor_0", count = 1}}
 		},
 		["rpgitems_boots_2"] = {
 			effects = {
 				{type = "force", modifier = "gun_speed_modifier", value = 0.3},
-					{type = "force", modifier = "character_running_speed_modifier", value = 0.3, unique = "Shoes"}
+				{type = "force", modifier = "character_running_speed_modifier", value = 0.3, unique = "Shoes"}
 			},
-			name = "[Boots of the Assassin]",
+			name = {"", "[", {"rpg-items.boots_2"}, "]"},
 			price = 12000,
 			parts = {{name = "rpgitems_shoes", count = 1}, {name = "rpgitems_attackspeed_0", count = 1}}
 		},
 		["rpgitems_golden_amulet"] = {
 			effects = {{type = "other", modifier = "income", value = 0.25}},
-			name = "[Golden Amulet]",
+			name = {"", "[", {"rpg-items.golden_amulet"}, "]"},
 			price = 10000,
 			stack_size = nil,
 			cooldown = nil,
@@ -120,9 +125,9 @@ function make_items()
 		["rpgitems_spineripper"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 1}, {type = "other", modifier = "crit", value = 0.1},
-					{type = "other", modifier = "critdamage", value = 0.5, unique = "Spineripper"}
+				{type = "other", modifier = "critdamage", value = 0.5, unique = "Spineripper"}
 			},
-			name = "[Spineripper]",
+			name = {"", "[", {"rpg-items.spineripper"}, "]"},
 			price = 20000,
 			parts = {{name = "rpgitems_damage_1", count = 1}, {name = "rpgitems_crit_1", count = 1}}
 		},
@@ -130,7 +135,7 @@ function make_items()
 			effects = {
 				{type = "force", modifier = "gun_speed_modifier", value = 0.3}, {type = "other", modifier = "crit", value = 0.05} -- , unique = "Immolation"},
 			},
-			name = "[Swift Blade]",
+			name = {"", "[", {"rpg-items.wind_0"}, "]"},
 			price = 15000,
 			parts = {
 				{name = "rpgitems_crit_0", count = 1}, {name = "rpgitems_attackspeed_0", count = 1}
@@ -141,10 +146,10 @@ function make_items()
 		["rpgitems_wind_1"] = {
 			effects = {
 				{type = "force", modifier = "gun_speed_modifier", value = 0.50}, {type = "other", modifier = "crit", value = 0.09},
-					{type = "other", modifier = "critdamage", value = 0.05},
-					{type = "force", modifier = "character_running_speed_modifier", value = 0.05}
+				{type = "other", modifier = "critdamage", value = 0.05},
+				{type = "force", modifier = "character_running_speed_modifier", value = 0.05}
 			},
-			name = "[Wind Fury]",
+			name = {"", "[", {"rpg-items.wind_1"}, "]"},
 			price = 25000,
 			parts = {
 				-- {name = "rpgitems_crit_0", count = 1},
@@ -156,35 +161,35 @@ function make_items()
 		["rpgitems_lifesteal_0"] = {
 			effects = {
 				{type = "force", modifier = "turret_attack_modifier", value = 0.2, turret = "character"},
-					{type = "other", modifier = "lifesteal", value = 0.1}
-			},
-			name = "[Thirsty Axe]",
+				{type = "other", modifier = "lifesteal", value = 0.1}
+		},
+			name = {"", "[", {"rpg-items.lifesteal_0"}, "]"},
 			price = 10000,
 			parts = {{name = "rpgitems_damage_0", count = 1}, {name = "rpgitems_regeneration_0", count = 1}}
 		},
 		["rpgitems_lifesteal_1"] = {
 			effects = {
 				{type = "force", modifier = "turret_attack_modifier", value = 0.5, turret = "character"},
-					{type = "other", modifier = "pctlifesteal", value = 1}
+				{type = "other", modifier = "pctlifesteal", value = 1}
 			},
-			name = "[Blade of the Impaler]",
+			name = {"", "[", {"rpg-items.lifesteal_1"}, "]"},
 			price = 10000,
 			parts = {{name = "rpgitems_damage_1", count = 1}, {name = "rpgitems_lifesteal_0", count = 1}}
 		},
 		["rpgitems_staff"] = {
 			effects = {
 				{type = "force", modifier = "turret_attack_modifier", value = 0.2, turret = "character"},
-					{type = "other", modifier = "crit", value = 0.07},
-					{type = "force", modifier = "character_health_bonus", value = 250},
-					-- {type = "other", modifier = "regen", value = 5},
-					-- {type = "other", modifier = "pctregen", value = 0.5},
-					-- {type = "spellpack", modifier = "max_spirit", value = 50},
-					{type = "other", modifier = "armor", value = 15}, -- {type = "spellpack", modifier = "cdr", value = 0.1},
-					{type = "other", modifier = "stun", value = 0.02}
+				{type = "other", modifier = "crit", value = 0.07},
+				{type = "force", modifier = "character_health_bonus", value = 250},
+				-- {type = "other", modifier = "regen", value = 5},
+				-- {type = "other", modifier = "pctregen", value = 0.5},
+				-- {type = "spellpack", modifier = "max_spirit", value = 50},
+				{type = "other", modifier = "armor", value = 15}, -- {type = "spellpack", modifier = "cdr", value = 0.1},
+				{type = "other", modifier = "stun", value = 0.02}
 				-- {type = "other", modifier = "revive", value = 1, unique = "Crusader"},
 			},
-			name = "[Staff of C'thulu]",
-			description = "[color=0.7,0.7,0.7]Stun chance is doubled for player attacks[/color]",
+			name = {"", "[", {"rpg-items.staff"}, "]"},
+			description = {"rpg-items-description.staff"},
 			-- cooldown = 300,
 			conflicts = "spell-pack",
 			andversion = 18,
@@ -197,17 +202,17 @@ function make_items()
 		["rpgitems_staff_spepa"] = {
 			effects = {
 				{type = "force", modifier = "turret_attack_modifier", value = 0.2, turret = "character"},
-					{type = "other", modifier = "crit", value = 0.07},
-					{type = "force", modifier = "character_health_bonus", value = 250},
-					-- {type = "other", modifier = "regen", value = 5},
-					-- {type = "other", modifier = "pctregen", value = 0.5},
-					-- {type = "spellpack", modifier = "max_spirit", value = 50},
-					{type = "other", modifier = "armor", value = 15}, {type = "spellpack", modifier = "cdr", value = 0.1},
-					{type = "other", modifier = "stun", value = 0.02, unique = "Madness"}
+				{type = "other", modifier = "crit", value = 0.07},
+				{type = "force", modifier = "character_health_bonus", value = 250},
+				-- {type = "other", modifier = "regen", value = 5},
+				-- {type = "other", modifier = "pctregen", value = 0.5},
+				-- {type = "spellpack", modifier = "max_spirit", value = 50},
+				{type = "other", modifier = "armor", value = 15}, {type = "spellpack", modifier = "cdr", value = 0.1},
+				{type = "other", modifier = "stun", value = 0.02, unique = "Madness"}
 				-- {type = "other", modifier = "revive", value = 1, unique = "Crusader"},
 			},
-			name = "[Staff of C'thulu]",
-			description = "[color=0.7,0.7,0.7]Stun chance is tripled for player attacks[/color]",
+			name = {"", "[", {"rpg-items.staff"}, "]"},
+			description = {"rpg-items-description.staff_spepa"},
 			-- cooldown = 300,
 			requires = "spell-pack",
 			andversion = 18,
@@ -220,26 +225,26 @@ function make_items()
 		["rpgitems_yellow_ammo"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.20, ammo = "bullet"},
-					{type = "giveitem", item = "firearm-magazine", per_second = 0.1}
+				{type = "giveitem", item = "firearm-magazine", per_second = 0.1}
 			},
-			name = "[Enchanted Firearm Magazine]",
+			name = {"", "[", {"rpg-items.yellow_ammo"}, "]"},
 			price = 20000
 		},
 		["rpgitems_red_ammo"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.30, ammo = "bullet"},
-					{type = "giveitem", item = "piercing-rounds-magazine", per_second = 0.1}
+				{type = "giveitem", item = "piercing-rounds-magazine", per_second = 0.1}
 			},
-			name = "[Enchanted Piercing Rounds Magazine]",
+			name = {"", "[", {"rpg-items.red_ammo"}, "]"},
 			price = 20000,
 			parts = {{name = "rpgitems_yellow_ammo", count = 1}}
 		},
 		["rpgitems_green_ammo"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.40, ammo = "bullet"},
-					{type = "giveitem", item = "uranium-rounds-magazine", per_second = 0.1}
+				{type = "giveitem", item = "uranium-rounds-magazine", per_second = 0.1}
 			},
-			name = "[Enchanted Uranium Rounds Magazine]",
+			name = {"", "[", {"rpg-items.green_ammo"}, "]"},
 			price = 20000,
 			parts = {{name = "rpgitems_red_ammo", count = 1}},
 			tech_requirement = "uranium-ammo"
@@ -247,10 +252,10 @@ function make_items()
 		["rpgitems_tyrs_hand"] = {
 			effects = {
 				{type = "force", modifier = "turret_attack_modifier", value = 0.20, turret = "character"},
-					{type = "force", modifier = "gun_speed_modifier", value = 0.4}, {type = "other", modifier = "crit", value = 0.07},
-					{type = "force", modifier = "character_health_bonus", value = 250}
+				{type = "force", modifier = "gun_speed_modifier", value = 0.4}, {type = "other", modifier = "crit", value = 0.07},
+				{type = "force", modifier = "character_health_bonus", value = 250}
 			},
-			name = "[Týr's Hand]",
+			name = {"", "[", {"rpg-items.tyrs_hand"}, "]"},
 			price = 7000,
 			parts = {
 				-- {name = "rpgitems_attackspeed_0", count = 2},
@@ -262,25 +267,25 @@ function make_items()
 			effects = {
 				{type = "force", modifier = "character_health_bonus", value = 200}, {type = "other", modifier = "armor", value = 15}
 			},
-			name = "[Reliable Cuirass]",
+			name = {"", "[", {"rpg-items.armor_health"}, "]"},
 			price = 10000,
 			parts = {{name = "rpgitems_armor_0", count = 1}, {name = "rpgitems_health_0", count = 1}}
 		},
 		["rpgitems_armor_2"] = {
 			effects = {
 				{type = "force", modifier = "character_health_bonus", value = 500},
-					{type = "other", modifier = "armor", value = 45}, {type = "other", modifier = "regen", value = 5}
+				{type = "other", modifier = "armor", value = 45}, {type = "other", modifier = "regen", value = 5}
 			},
-			name = "[Steel Plate]",
+			name = {"", "[", {"rpg-items.armor2"}, "]"},
 			price = 13000,
 			parts = {{name = "rpgitems_armor_health", count = 2}, {name = "rpgitems_regeneration_0", count = 1}}
 		},
 		["rpgitems_regeneration_1"] = {
 			effects = {
 				{type = "force", modifier = "character_health_bonus", value = 200},
-					{type = "other", modifier = "pctregen", value = 0.5}
+				{type = "other", modifier = "pctregen", value = 0.5}
 			},
-			name = "[Gene-Splicing]",
+			name = {"", "[", {"rpg-items.regeneration_1"}, "]"},
 			price = 4000,
 			parts = {{name = "rpgitems_health_0", count = 1}, {name = "rpgitems_regeneration_0", count = 1}}
 		},
@@ -288,60 +293,62 @@ function make_items()
 		["rpgitems_bulwark"] = {
 			effects = {
 				{type = "force", modifier = "character_health_bonus", value = 800},
-					{type = "other", modifier = "regen", value = 10}, -- {type = "other", modifier = "repair", value = 0.15},
-					{type = "other", modifier = "pctregen", value = 1.5, unique = "Aqua vita"}
+				{type = "other", modifier = "regen", value = 10}, -- {type = "other", modifier = "repair", value = 0.15},
+				{type = "other", modifier = "pctregen", value = 1.5, unique = "Aqua vita"}
 			},
-			name = "[Bulwark]",
+			name = {"", "[", {"rpg-items.bulwark"}, "]"},
 			price = 12000,
 			parts = {
 				{name = "rpgitems_health_1", count = 1}, {name = "rpgitems_regeneration_1", count = 1},
-					{name = "rpgitems_regeneration_0", count = 2}
+				{name = "rpgitems_regeneration_0", count = 2}
 				-- {name = "rpgitems_repair", count = 1}
 			}
 		},
 		["rpgitems_horned_helmet"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.25},
-					{type = "force", modifier = "character_health_bonus", value = 300},
-					{type = "other", modifier = "armor", value = 20}, {type = "other", modifier = "thorns", value = 90}
+				{type = "force", modifier = "character_health_bonus", value = 300},
+				{type = "other", modifier = "armor", value = 20}, {type = "other", modifier = "thorns", value = 90}
 			},
-			name = "[Horned Helmet]",
+			name = {"", "[", {"rpg-items.horned_helmet"}, "]"},
 			price = 10000,
 			parts = {
 				{name = "rpgitems_spiked_collar", count = 1}, {name = "rpgitems_armor_health", count = 1},
-					{name = "rpgitems_damage_0", count = 1}
+				{name = "rpgitems_damage_0", count = 1}
 			}
 		},
 		["rpgitems_crusader_spepa"] = {
 			effects = {
 				{type = "force", modifier = "character_health_bonus", value = 250},
-					{type = "other", modifier = "armor", value = 20}, {type = "other", modifier = "regen", value = 5},
-					{type = "spellpack", modifier = "max_spirit", value = 50}, {type = "spellpack", modifier = "cdr", value = 0.1},
-					{type = "other", modifier = "income", value = 0.3},
-					{type = "other", modifier = "revive", value = 5, unique = "Crusader"}
+				{type = "other", modifier = "armor", value = 20}, {type = "other", modifier = "regen", value = 5},
+				{type = "spellpack", modifier = "max_spirit", value = 50}, {type = "spellpack", modifier = "cdr", value = 0.1},
+				{type = "other", modifier = "income", value = 0.3},
+				{type = "other", modifier = "revive", value = 5, unique = "Crusader"}
 			},
-			name = "[Holy Crusader Helmet]",
+			name = {"", "[", {"rpg-items.crusader"}, "]"},
 			-- description = "[color=0.9098,0.7255,0.1373](unique: Crusader)[/color]",
 			cooldown = 300,
 			requires = "spell-pack",
 			andversion = 18,
 			price = 11000,
 			parts = {
-				{name = "rpgitems_armor_health", count = 1}, {name = "rpgitems_regeneration_0", count = 1},
-					{name = "rpgitems_golden_amulet", count = 1}
+				{name = "rpgitems_armor_health", count = 1},
+				{name = "rpgitems_regeneration_0", count = 1},
+				{name = "rpgitems_golden_amulet", count = 1}
 			}
 		},
 		["rpgitems_crusader"] = {
 			effects = {
 				{type = "force", modifier = "character_health_bonus", value = 250},
-					{type = "other", modifier = "armor", value = 20}, {type = "other", modifier = "regen", value = 5},
-					{type = "other", modifier = "pctregen", value = 0.5},
-					-- {type = "spellpack", modifier = "max_spirit", value = 50},
-					-- {type = "spellpack", modifier = "cdr", value = 0.1},
-					{type = "other", modifier = "income", value = 0.25},
-					{type = "other", modifier = "revive", value = 5, unique = "Crusader"}
+				{type = "other", modifier = "armor", value = 20},
+				{type = "other", modifier = "regen", value = 5},
+				{type = "other", modifier = "pctregen", value = 0.5},
+				-- {type = "spellpack", modifier = "max_spirit", value = 50},
+				-- {type = "spellpack", modifier = "cdr", value = 0.1},
+				{type = "other", modifier = "income", value = 0.25},
+				{type = "other", modifier = "revive", value = 5, unique = "Crusader"}
 			},
-			name = "[Holy Crusader Helmet]",
+			name = {"", "[", {"rpg-items.crusader"}, "]"},
 			-- description = "[color=0.9098,0.7255,0.1373](unique: Crusader)[/color]",
 			cooldown = 300,
 			conflicts = "spell-pack",
@@ -349,20 +356,20 @@ function make_items()
 			price = 11000,
 			parts = {
 				{name = "rpgitems_armor_health", count = 1}, {name = "rpgitems_regeneration_0", count = 1},
-					{name = "rpgitems_golden_amulet", count = 1}
+				{name = "rpgitems_golden_amulet", count = 1}
 			}
 		},
 		["rpgitems_flamecloak_spepa"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.4, ammo = "flamethrower"},
-					{type = "force", modifier = "character_health_bonus", value = 250},
-					-- {type = "other", modifier = "regen", value = 5},
-					-- {type = "other", modifier = "pctregen", value = 0.5},
-					-- {type = "spellpack", modifier = "max_spirit", value = 50},
-					{type = "other", modifier = "armor", value = 20}, {type = "spellpack", modifier = "cdr", value = 0.1},
-					{type = "other", modifier = "immolation", value = 50} -- unique = "Immolation"},
+				{type = "force", modifier = "character_health_bonus", value = 250},
+				-- {type = "other", modifier = "regen", value = 5},
+				-- {type = "other", modifier = "pctregen", value = 0.5},
+				-- {type = "spellpack", modifier = "max_spirit", value = 50},
+				{type = "other", modifier = "armor", value = 20}, {type = "spellpack", modifier = "cdr", value = 0.1},
+				{type = "other", modifier = "immolation", value = 50} -- unique = "Immolation"},
 			},
-			name = "[Flame Cloak]",
+			name = {"", "[", {"rpg-items.flamecloak"}, "]"},
 			-- description = "[color=0.7,0.7,0.7]Stun chance is tripled for player attacks[/color]",
 			cooldown = 0,
 			requires = "spell-pack",
@@ -382,21 +389,21 @@ function make_items()
 			end,
 			parts = {
 				{name = "rpgitems_lavalamp", count = 1}, {name = "rpgitems_armor_health", count = 1},
-					-- {name = "rpgitems_regeneration_0", count = 1},
-					{name = "rpgitems_manareg_0", count = 1}
+				-- {name = "rpgitems_regeneration_0", count = 1},
+				{name = "rpgitems_manareg_0", count = 1}
 			}
 		},
 		["rpgitems_flamecloak"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.4, ammo = "flamethrower"},
-					{type = "force", modifier = "character_health_bonus", value = 250},
-					{type = "other", modifier = "armor", value = 20}, {type = "other", modifier = "regen", value = 5},
-					-- {type = "other", modifier = "pctregen", value = 0.5},
-					-- {type = "spellpack", modifier = "max_spirit", value = 50},
-					-- {type = "spellpack", modifier = "cdr", value = 0.1},
-					{type = "other", modifier = "immolation", value = 50} -- , unique = "Immolation"},
+				{type = "force", modifier = "character_health_bonus", value = 250},
+				{type = "other", modifier = "armor", value = 20}, {type = "other", modifier = "regen", value = 5},
+				-- {type = "other", modifier = "pctregen", value = 0.5},
+				-- {type = "spellpack", modifier = "max_spirit", value = 50},
+				-- {type = "spellpack", modifier = "cdr", value = 0.1},
+				{type = "other", modifier = "immolation", value = 50} -- , unique = "Immolation"},
 			},
-			name = "[Flame Cloak]",
+			name = {"", "[", {"rpg-items.flamecloak"}, "]"},
 			-- description = "[color=0.7,0.7,0.7]Stun chance is tripled for player attacks[/color]",
 			cooldown = 3,
 			conflicts = "spell-pack",
@@ -406,8 +413,9 @@ function make_items()
 				global.immolation[player.index] = not global.immolation[player.index]
 			end,
 			parts = {
-				{name = "rpgitems_lavalamp", count = 1}, {name = "rpgitems_armor_health", count = 1},
-					{name = "rpgitems_regeneration_0", count = 1}
+				{name = "rpgitems_lavalamp", count = 1},
+				{name = "rpgitems_armor_health", count = 1},
+				{name = "rpgitems_regeneration_0", count = 1}
 				-- {name = "rpgitems_manareg_0", count = 1},
 			}
 		},
@@ -415,7 +423,7 @@ function make_items()
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.4}, {type = "other", modifier = "crit", value = 0.05}
 			},
-			name = "[Morning Star]",
+			name = {"", "[", {"rpg-items.crit_1"}, "]"},
 			price = 25000,
 			parts = {{name = "rpgitems_damage_0", count = 1}, {name = "rpgitems_crit_0", count = 1}}
 		},
@@ -431,48 +439,47 @@ function make_items()
 		["rpgitems_chardamage_gold"] = {
 			effects = {
 				{type = "force", modifier = "turret_attack_modifier", value = 0.1, turret = "character"},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.75},
-					{type = "other", modifier = "income", value = 0.3}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.75},
+				{type = "other", modifier = "income", value = 0.3}
 			},
 			-- description = "\n[color=0.7,0.7,0.7]Melee Damage gets multiplied by item damage bonuses[/color]",
-			name = "[Hammer of the Smith]",
+			name = {"", "[", {"rpg-items.chardamage_gold"}, "]"},
 			price = 16000,
 			parts = {{name = "rpgitems_crafting_speed", count = 1}, {name = "rpgitems_golden_amulet", count = 1}}
 		},
 		["rpgitems_chardamage_gold_reg"] = {
 			effects = {
 				{type = "force", modifier = "turret_attack_modifier", value = 0.15, turret = "character"},
-					{type = "other", modifier = "armor", value = 15}, {type = "other", modifier = "regen", value = 7.5},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 1.0},
-					{type = "force", modifier = "character_reach_distance_bonus", value = 5},
-					{type = "other", modifier = "income", value = 0.35}
-
+				{type = "other", modifier = "armor", value = 15}, {type = "other", modifier = "regen", value = 7.5},
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 1.0},
+				{type = "force", modifier = "character_reach_distance_bonus", value = 5},
+				{type = "other", modifier = "income", value = 0.35}
 			},
-			name = "[Blessed Hammer]",
+			name = {"", "[", {"rpg-items.chardamage_gold"}, "]"},
 			-- description = "\n[color=0.7,0.7,0.7]Melee Damage gets multiplied by item damage bonuses[/color]",
 			price = 10000,
 			parts = {
 				{name = "rpgitems_chardamage_gold", count = 1}, {name = "rpgitems_regeneration_0", count = 1},
-					{name = "rpgitems_armor_0", count = 1}
+				{name = "rpgitems_armor_0", count = 1}
 			}
 		},
 		["rpgitems_spellpack_neclace"] = {
 			effects = {
 				{type = "spellpack", modifier = "max_mana", value = 30}, {type = "spellpack", modifier = "mana_reg", value = 0.5},
-					{type = "spellpack", modifier = "spirit_reg", value = 0.15}
+				{type = "spellpack", modifier = "spirit_reg", value = 0.15}
 			},
 			requires = "spell-pack",
 			andversion = 18,
-			name = "[Magical Necklace]",
+			name = {"", "[", {"rpg-items.spellpack_neclace"}, "]"},
 			price = 14000,
 			parts = {{name = "rpgitems_mana_0", count = 1}, {name = "rpgitems_manareg_0", count = 1}}
 		},
 		["rpgitems_multitool"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 1.5},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 1}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 1}
 			},
-			name = "[Multitool]",
+			name = {"", "[", {"rpg-items.multitool"}, "]"},
 			price = 12000,
 			parts = {{name = "rpgitems_mining_speed", count = 1}, {name = "rpgitems_crafting_speed", count = 1}}
 		},
@@ -484,102 +491,103 @@ function make_items()
 		["rpgitems_robo_butler"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 2.5},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 1.75},
-					-- {type = "force", modifier = "turret_attack_modifier", value = 0.20},
-					{type = "force", modifier = "character_reach_distance_bonus", value = 10},
-					{type = "other", modifier = "repair", value = 0.15}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 1.75},
+				-- {type = "force", modifier = "turret_attack_modifier", value = 0.20},
+				{type = "force", modifier = "character_reach_distance_bonus", value = 10},
+				{type = "other", modifier = "repair", value = 0.15}
 				-- {type = "other", modifier = "energy", value = 100},
 			},
-			name = "[Personal Robo Butler]",
+			name = {"", "[", {"rpg-items.robo_butler"}, "]"},
 			price = 15000,
 			parts = {
 				-- {name = "rpgitems_book1", count = 1},
 				-- {name = "rpgitems_battery", count = 1},
-				{name = "rpgitems_multitool", count = 1}, {name = "rpgitems_repair", count = 1},
-					{name = "rpgitems_battery", count = 1}
+				{name = "rpgitems_multitool", count = 1},
+				{name = "rpgitems_repair", count = 1},
+				{name = "rpgitems_battery", count = 1}
 
 			}
 		},
 		["rpgitems_rainbow_drill"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 2.0},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 1.0},
-					{type = "giveitem", item = "steel-plate", per_second = 0.3},
-					{type = "giveitem", item = "iron-plate", per_second = 0.5},
-					{type = "giveitem", item = "copper-plate", per_second = 0.5},
-					{type = "giveitem", item = "stone-brick", per_second = 0.5}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 1.0},
+				{type = "giveitem", item = "steel-plate", per_second = 0.3},
+				{type = "giveitem", item = "iron-plate", per_second = 0.5},
+				{type = "giveitem", item = "copper-plate", per_second = 0.5},
+				{type = "giveitem", item = "stone-brick", per_second = 0.5}
 			},
-			name = "[Ultimate Miner]",
+			name = {"", "[", {"rpg-items.rainbow_drill"}, "]"},
 			price = -15000,
 			parts = {
 				{name = "rpgitems_steel_plates_generator", count = 1}, {name = "rpgitems_iron_plates_generator", count = 1},
-					{name = "rpgitems_copper_plates_generator", count = 1}, {name = "rpgitems_stone_bricks_generator", count = 1}
+				{name = "rpgitems_copper_plates_generator", count = 1}, {name = "rpgitems_stone_bricks_generator", count = 1}
 			}
 		},
 		["rpgitems_iron_generator"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.2},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.1},
-					{type = "giveitem", item = "iron-ore", per_second = 0.5}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.1},
+				{type = "giveitem", item = "iron-ore", per_second = 0.5}
 			},
-			name = "[Automated Iron Miner]",
+			name = {"", "[", {"rpg-items.iron_generator"}, "]"},
 			price = 6000
 		},
 		["rpgitems_iron_plates_generator"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.4},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2},
-					{type = "giveitem", item = "iron-plate", per_second = 0.5}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2},
+				{type = "giveitem", item = "iron-plate", per_second = 0.5}
 			},
-			name = "[Automated Iron Miner & Smelter]",
+			name = {"", "[", {"rpg-items.iron_plates_generator"}, "]"},
 			price = 5000,
 			parts = {{name = "rpgitems_iron_generator", count = 1}}
 		},
 		["rpgitems_steel_plates_generator"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.8},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.4},
-					{type = "giveitem", item = "steel-plate", per_second = 0.3}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.4},
+				{type = "giveitem", item = "steel-plate", per_second = 0.3}
 			},
-			name = "[Automated Steel Miner, Smelter & Refiner]",
+			name = {"", "[", {"rpg-items.rpgitems_steel_plates_generator"}, "]"},
 			price = 5000,
 			parts = {{name = "rpgitems_iron_plates_generator", count = 3}}
 		},
 		["rpgitems_copper_generator"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.2},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.1},
-					{type = "giveitem", item = "copper-ore", per_second = 0.5}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.1},
+				{type = "giveitem", item = "copper-ore", per_second = 0.5}
 			},
-			name = "[Automated Copper Miner]",
+			name = {"", "[", {"rpg-items.copper_generator"}, "]"},
 			price = 6000
 		},
 		["rpgitems_copper_plates_generator"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.4},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2},
-					{type = "giveitem", item = "copper-plate", per_second = 0.5}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2},
+				{type = "giveitem", item = "copper-plate", per_second = 0.5}
 			},
-			name = "[Automated Copper Miner & Smelter]",
+			name = {"", "[", {"rpg-items.copper_plates_generator"}, "]"},
 			price = 5000,
 			parts = {{name = "rpgitems_copper_generator", count = 1}}
 		},
 		["rpgitems_stone_generator"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.2},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.1},
-					{type = "giveitem", item = "stone", per_second = 1}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.1},
+				{type = "giveitem", item = "stone", per_second = 1}
 			},
-			name = "[Automated Stone Miner]",
+			name = {"", "[", {"rpg-items.stone_generator"}, "]"},
 			price = 5000
 		},
 		["rpgitems_stone_bricks_generator"] = {
 			effects = {
 				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.4},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2},
-					{type = "giveitem", item = "stone-brick", per_second = 0.5}
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2},
+				{type = "giveitem", item = "stone-brick", per_second = 0.5}
 			},
-			name = "[Automated Stone Miner & Smelter]",
+			name = {"", "[", {"rpg-items.stone_bricks_generator"}, "]"},
 			price = 5000,
 			parts = {{name = "rpgitems_stone_generator", count = 1}}
 		},
@@ -602,24 +610,24 @@ function make_items()
 				-- {type = "force", modifier = "ammo_damage_modifier", value = 0.1, turret = "character"},
 				-- {type = "force", modifier = "gun_speed_modifier", value = 0.1, turret = "character"},
 				{type = "force", modifier = "character_health_bonus", value = 25, unique = 91},
-					{type = "force", modifier = "character_running_speed_modifier", value = 0.025, unique = 92},
-					{type = "force", modifier = "manual_mining_speed_modifier", value = 0.2, unique = 93},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2, unique = 94},
-					{type = "force", modifier = "character_inventory_slots_bonus", value = 1, unique = 95},
-					{type = "force", modifier = "character_reach_distance_bonus", value = 1, unique = 96},
-					-- {type = "other", modifier = "pctlifesteal", value = 1},
-					-- {type = "other", modifier = "crit", value = 0.05},
-					-- {type = "other", modifier = "critdamage", value = 0.1},
-					-- {type = "other", modifier = "armor", value = 10},
-					-- {type = "other", modifier = "thorns", value = 1},
-					-- {type = "other", modifier = "regen", value = 1},
-					-- {type = "other", modifier = "chardamage", value = 1},
-					{type = "other", modifier = "repair", value = 0.04, unique = 97},
-					-- {type = "other", modifier = "pctlifesteal", value = 1},
-					{type = "other", modifier = "income", value = 0.05, unique = 98},
-					{type = "other", modifier = "energy", value = 50, unique = 99}
+				{type = "force", modifier = "character_running_speed_modifier", value = 0.025, unique = 92},
+				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.2, unique = 93},
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.2, unique = 94},
+				{type = "force", modifier = "character_inventory_slots_bonus", value = 1, unique = 95},
+				{type = "force", modifier = "character_reach_distance_bonus", value = 1, unique = 96},
+				-- {type = "other", modifier = "pctlifesteal", value = 1},
+				-- {type = "other", modifier = "crit", value = 0.05},
+				-- {type = "other", modifier = "critdamage", value = 0.1},
+				-- {type = "other", modifier = "armor", value = 10},
+				-- {type = "other", modifier = "thorns", value = 1},
+				-- {type = "other", modifier = "regen", value = 1},
+				-- {type = "other", modifier = "chardamage", value = 1},
+				{type = "other", modifier = "repair", value = 0.04, unique = 97},
+				-- {type = "other", modifier = "pctlifesteal", value = 1},
+				{type = "other", modifier = "income", value = 0.05, unique = 98},
+				{type = "other", modifier = "energy", value = 50, unique = 99}
 			},
-			name = "[Bronze Gear Wheel]",
+			name = {"", "[", {"rpg-items.factorio_bronze"}, "]"},
 			price = 25000
 			-- parts = {
 			--	--{name = "rpgitems_battery", count = 1},
@@ -632,24 +640,24 @@ function make_items()
 				-- {type = "force", modifier = "ammo_damage_modifier", value = 0.1, turret = "character"},
 				-- {type = "force", modifier = "gun_speed_modifier", value = 0.1, turret = "character"},
 				{type = "force", modifier = "character_health_bonus", value = 50, unique = 91},
-					{type = "force", modifier = "character_running_speed_modifier", value = 0.05, unique = 92},
-					{type = "force", modifier = "manual_mining_speed_modifier", value = 0.4, unique = 93},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.4, unique = 94},
-					{type = "force", modifier = "character_inventory_slots_bonus", value = 2, unique = 95},
-					{type = "force", modifier = "character_reach_distance_bonus", value = 2, unique = 96},
-					-- {type = "other", modifier = "pctlifesteal", value = 1},
-					-- {type = "other", modifier = "crit", value = 0.05},
-					-- {type = "other", modifier = "critdamage", value = 0.1},
-					-- {type = "other", modifier = "armor", value = 10},
-					-- {type = "other", modifier = "thorns", value = 1},
-					-- {type = "other", modifier = "regen", value = 1},
-					-- {type = "other", modifier = "chardamage", value = 1},
-					{type = "other", modifier = "repair", value = 0.08, unique = 97},
-					-- {type = "other", modifier = "pctlifesteal", value = 1},
-					{type = "other", modifier = "income", value = 0.1, unique = 98},
-					{type = "other", modifier = "energy", value = 100, unique = 99}
+				{type = "force", modifier = "character_running_speed_modifier", value = 0.05, unique = 92},
+				{type = "force", modifier = "manual_mining_speed_modifier", value = 0.4, unique = 93},
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.4, unique = 94},
+				{type = "force", modifier = "character_inventory_slots_bonus", value = 2, unique = 95},
+				{type = "force", modifier = "character_reach_distance_bonus", value = 2, unique = 96},
+				-- {type = "other", modifier = "pctlifesteal", value = 1},
+				-- {type = "other", modifier = "crit", value = 0.05},
+				-- {type = "other", modifier = "critdamage", value = 0.1},
+				-- {type = "other", modifier = "armor", value = 10},
+				-- {type = "other", modifier = "thorns", value = 1},
+				-- {type = "other", modifier = "regen", value = 1},
+				-- {type = "other", modifier = "chardamage", value = 1},
+				{type = "other", modifier = "repair", value = 0.08, unique = 97},
+				-- {type = "other", modifier = "pctlifesteal", value = 1},
+				{type = "other", modifier = "income", value = 0.1, unique = 98},
+				{type = "other", modifier = "energy", value = 100, unique = 99}
 			},
-			name = "[Silver Gear Wheel]",
+			name = {"", "[", {"rpg-items.factorio_silver"}, "]"},
 			price = 20000,
 			parts = {
 				{name = "rpgitems_factorio_bronze", count = 1}
@@ -661,24 +669,24 @@ function make_items()
 				-- {type = "force", modifier = "ammo_damage_modifier", value = 0.1, turret = "character"},
 				-- {type = "force", modifier = "gun_speed_modifier", value = 0.1, turret = "character"},
 				{type = "force", modifier = "character_health_bonus", value = 125, unique = 91},
-					{type = "force", modifier = "character_running_speed_modifier", value = 0.125, unique = 92},
-					{type = "force", modifier = "manual_mining_speed_modifier", value = 1, unique = 93},
-					{type = "force", modifier = "manual_crafting_speed_modifier", value = 1, unique = 94},
-					{type = "force", modifier = "character_inventory_slots_bonus", value = 5, unique = 95},
-					{type = "force", modifier = "character_reach_distance_bonus", value = 5, unique = 96},
-					-- {type = "other", modifier = "pctlifesteal", value = 1},
-					-- {type = "other", modifier = "crit", value = 0.05},
-					-- {type = "other", modifier = "critdamage", value = 0.1},
-					-- {type = "other", modifier = "armor", value = 10},
-					-- {type = "other", modifier = "thorns", value = 1},
-					-- {type = "other", modifier = "regen", value = 1},
-					-- {type = "other", modifier = "chardamage", value = 1},
-					{type = "other", modifier = "repair", value = 0.2, unique = 97},
-					-- {type = "other", modifier = "pctlifesteal", value = 1},
-					{type = "other", modifier = "income", value = 0.25, unique = 98},
-					{type = "other", modifier = "energy", value = 250, unique = 99}
+				{type = "force", modifier = "character_running_speed_modifier", value = 0.125, unique = 92},
+				{type = "force", modifier = "manual_mining_speed_modifier", value = 1, unique = 93},
+				{type = "force", modifier = "manual_crafting_speed_modifier", value = 1, unique = 94},
+				{type = "force", modifier = "character_inventory_slots_bonus", value = 5, unique = 95},
+				{type = "force", modifier = "character_reach_distance_bonus", value = 5, unique = 96},
+				-- {type = "other", modifier = "pctlifesteal", value = 1},
+				-- {type = "other", modifier = "crit", value = 0.05},
+				-- {type = "other", modifier = "critdamage", value = 0.1},
+				-- {type = "other", modifier = "armor", value = 10},
+				-- {type = "other", modifier = "thorns", value = 1},
+				-- {type = "other", modifier = "regen", value = 1},
+				-- {type = "other", modifier = "chardamage", value = 1},
+				{type = "other", modifier = "repair", value = 0.2, unique = 97},
+				-- {type = "other", modifier = "pctlifesteal", value = 1},
+				{type = "other", modifier = "income", value = 0.25, unique = 98},
+				{type = "other", modifier = "energy", value = 250, unique = 99}
 			},
-			name = "[Golden Gear Wheel]",
+			name = {"", "[", {"rpg-items.factorio_gold"}, "]"},
 			price = 45000,
 			parts = {
 				{name = "rpgitems_factorio_silver", count = 1}
@@ -688,27 +696,27 @@ function make_items()
 		["rpgitems_cards_spepa"] = {
 			effects = {
 				{type = "other", modifier = "regen", value = 5}, {type = "spellpack", modifier = "mana_reg", value = 0.5},
-					{type = "spellpack", modifier = "spirit_reg", value = 0.2}, {type = "spellpack", modifier = "cdr", value = 0.1},
-					{type = "other", modifier = "repair", value = 0.15}, {type = "other", modifier = "energy", value = 250}
+				{type = "spellpack", modifier = "spirit_reg", value = 0.2}, {type = "spellpack", modifier = "cdr", value = 0.1},
+				{type = "other", modifier = "repair", value = 0.15}, {type = "other", modifier = "energy", value = 250}
 			},
-			name = "[Ethereal Playing Cards]",
+			name = {"", "[", {"rpg-items.cards"}, "]"},
 			requires = "spell-pack",
 			andversion = 18,
 			price = 10000,
 			parts = {
 				{name = "rpgitems_battery", count = 1}, {name = "rpgitems_manareg_0", count = 1},
-					{name = "rpgitems_regeneration_0", count = 1}, {name = "rpgitems_repair", count = 1}
+				{name = "rpgitems_regeneration_0", count = 1}, {name = "rpgitems_repair", count = 1}
 			}
 		},
 		["rpgitems_cards"] = {
 			effects = {
 				{type = "other", modifier = "regen", value = 5}, {type = "other", modifier = "pctregen", value = 0.5},
-					{type = "other", modifier = "repair", value = 0.15}, {type = "other", modifier = "energy", value = 250}
+				{type = "other", modifier = "repair", value = 0.15}, {type = "other", modifier = "energy", value = 250}
 				-- {type = "spellpack", modifier = "mana_reg", value = 0.5},
 				-- {type = "spellpack", modifier = "spirit_reg", value = 0.2},
 				-- {type = "spellpack", modifier = "cdr", value = 0.1},
 			},
-			name = "[Ethereal Playing Cards]",
+			name = {"", "[", {"rpg-items.cards"}, "]"},
 			conflicts = "spell-pack",
 			andversion = 18,
 			price = 10000,
@@ -720,86 +728,86 @@ function make_items()
 		["rpgitems_spellpack_helmet"] = {
 			effects = {
 				{type = "force", modifier = "ammo_damage_modifier", value = 0.4, ammo = "grenade"},
-					{type = "spellpack", modifier = "max_mana", value = 50}, {type = "spellpack", modifier = "mana_reg", value = 1},
-					{type = "spellpack", modifier = "spirit_reg", value = 0.3}, {type = "spellpack", modifier = "cdr", value = 0.3}
+				{type = "spellpack", modifier = "max_mana", value = 50}, {type = "spellpack", modifier = "mana_reg", value = 1},
+				{type = "spellpack", modifier = "spirit_reg", value = 0.3}, {type = "spellpack", modifier = "cdr", value = 0.3}
 			},
 			requires = "spell-pack",
 			andversion = 18,
-			name = "[Hood of Wisdom]",
+			name = {"", "[", {"rpg-items.spellpack_helmet"}, "]"},
 			price = 25000,
 			parts = {{name = "rpgitems_spellpack_neclace", count = 1}, {name = "rpgitems_grenade_damage_0", count = 1}}
 		},
 		["rpgitems_repair"] = {
 			effects = {{type = "other", modifier = "repair", value = 0.1}},
-			name = "[Reactive Materials]",
+			name = {"", "[", {"rpg-items.repair"}, "]"},
 			stack_size = 5,
 			price = 25000
 		},
 		["rpgitems_spiked_collar"] = {
-			effects = { -- {type = "force", modifier = "character_health_bonus", value = 200},
+			effects = {
+				-- {type = "force", modifier = "character_health_bonus", value = 200},
 				-- {type = "other", modifier = "armor", value = 15},
 				{type = "other", modifier = "thorns", value = 25}
 			},
-			name = "[Spiked Collar]",
+			name = {"", "[", {"rpg-items.spiked_collar"}, "]"},
 			stack_size = 5,
 			price = 24000
 		},
 		["rpgitems_health_0"] = {
 			effects = {{type = "force", modifier = "character_health_bonus", value = 150}},
-			name = "[Small Talisman of Health]",
+			name = {"", "[", {"rpg-items.health_0"}, "]"},
 			stack_size = 5,
 			price = 18000
 		},
 		["rpgitems_health_1"] = {
 			effects = {{type = "force", modifier = "character_health_bonus", value = 400}},
-			name = "[Huge Health Gem]",
+			name = {"", "[", {"rpg-items.health_1"}, "]"},
 			-- stack_size = 5,
 			price = 10000,
 			parts = {{name = "rpgitems_health_0", count = 2}}
 		},
 		["rpgitems_armor_0"] = {
 			effects = {{type = "other", modifier = "armor", value = 10}},
-			name = "[Small Shield]",
+			name = {"", "[", {"rpg-items.armor_0"}, "]"},
 			stack_size = 5,
 			price = 18000
 		},
 		["rpgitems_regeneration_0"] = {
 			effects = {{type = "other", modifier = "regen", value = 2.5}},
-			name = "[Healing Pendant]",
+			name = {"", "[", {"rpg-items.regeneration_0"}, "]"},
 			stack_size = 5,
 			price = 7500,
 			parts = {{name = "rpgitems_health_potion", count = 10}}
 		},
 		["rpgitems_damage_0"] = {
 			effects = {{type = "force", modifier = "ammo_damage_modifier", value = 0.25}},
-			name = "[Blunt Axe]",
+			name = {"", "[", {"rpg-items.damage_0"}, "]"},
 			stack_size = 5,
 			price = 25000
 		},
-		["rpgitems_attackspeed_0"] = {
-			effects = {{type = "force", modifier = "gun_speed_modifier", value = 0.2}},
-			name = "[Light Dagger]",
-			stack_size = 5,
-			price = 20000
-		},
 		["rpgitems_damage_1"] = {
 			effects = {{type = "force", modifier = "ammo_damage_modifier", value = 0.7}},
-			name = "[Heavy Axe]",
+			name = {"", "[", {"rpg-items.damage_1"}, "]"},
 			-- stack_size = 5,
 			price = 55000
 		},
+		["rpgitems_attackspeed_0"] = {
+			effects = {{type = "force", modifier = "gun_speed_modifier", value = 0.2}},
+			name = {"", "[", {"rpg-items.attackspeed_0"}, "]"},
+			stack_size = 5,
+			price = 20000
+		},
 		["rpgitems_crit_0"] = {
 			effects = {{type = "other", modifier = "crit", value = 0.03}},
-			name = "[Spiked Mace]",
+			name = {"", "[", {"rpg-items.crit_0"}, "]"},
 			stack_size = 5,
 			price = 30000
 		},
-
 		["rpgitems_manareg_0"] = {
 			effects = {{type = "spellpack", modifier = "mana_reg", value = 0.5}},
 			requires = "spell-pack",
 			andversion = 18,
-			name = "[Vibrant Talisman]",
+			name = {"", "[", {"rpg-items.manareg_0"}, "]"},
 			stack_size = 5,
 			price = 7500,
 			parts = {{name = "rpgitems_mana_potion", count = 10}}
@@ -808,46 +816,43 @@ function make_items()
 			effects = {{type = "spellpack", modifier = "max_mana", value = 20}},
 			requires = "spell-pack",
 			andversion = 18,
-			name = "[Luminescent Gem]",
+			name = {"", "[", {"rpg-items.mana_0"}, "]"},
 			stack_size = 5,
 			price = 10000
 		},
-
 		["rpgitems_grenade_damage_0"] = {
 			effects = {{type = "force", modifier = "ammo_damage_modifier", value = 0.2, ammo = "grenade"}},
 			requires = "spell-pack",
 			andversion = 18,
-			name = "[Pyrogen Grenades]",
+			name = {"", "[", {"rpg-items.grenade_damage_0"}, "]"},
 			stack_size = 5,
 			price = 14000
 		},
 		["rpgitems_mining_speed"] = {
 			effects = {{type = "force", modifier = "manual_mining_speed_modifier", value = 0.75}},
-			name = "[Buzzsaw]",
+			name = {"", "[", {"rpg-items.mining_speed"}, "]"},
 			stack_size = 5,
 			price = 16000
 		},
 		["rpgitems_crafting_speed"] = {
 			effects = {{type = "force", modifier = "manual_crafting_speed_modifier", value = 0.5}},
-			name = "[Adjustable Wrench]",
+			name = {"", "[", {"rpg-items.crafting_speed"}, "]"},
 			stack_size = 5,
 			price = 16000
 		},
-
 		["rpgitems_battery"] = {
 			effects = {{type = "other", modifier = "energy", value = 150}},
-			name = "[Battery Pack]",
+			name = {"", "[", {"rpg-items.battery"}, "]"},
 			stack_size = 5,
 			price = 15000
 			-- parts = {
-			-- {name = "rpgitems_factorio_silver", count = 1},
-			-- {name = "rpgitems_lifesteal_0", count = 1},
+			-- 	{name = "rpgitems_factorio_silver", count = 1},
+			-- 	{name = "rpgitems_lifesteal_0", count = 1},
 			-- }
 		},
-
 		["rpgitems_lavalamp"] = {
 			effects = {{type = "force", modifier = "ammo_damage_modifier", value = 0.2, ammo = "flamethrower"}},
-			name = "[Lava Lamp]",
+			name = {"", "[", {"rpg-items.lavalamp"}, "]"},
 			stack_size = 10,
 			-- description = "[color=0.7,0.7,0.7]Stun chance is tripled for player attacks[/color]",
 			-- cooldown = 300,
@@ -863,8 +868,8 @@ function make_items()
 
 		["rpgitems_bonus_slot"] = {
 			effects = {},
-			description = "+1 Item Slot",
-			name = "[Bonus Slot]",
+			name = {"", "[", {"rpg-items.bonus_slot"}, "]"},
+			description = {"rpg-items-description.bonus_slot"},
 			price = 70000,
 			parts = {}
 		}
@@ -884,6 +889,7 @@ function capitalize(str)
 end
 
 function make_description(data)
+	-- TODO: rework
 	local localization = {
 		["iron-ore"] = "Iron ore",
 		["iron-plate"] = "Iron plate",
@@ -899,114 +905,114 @@ function make_description(data)
 		["uranium-rounds-magazine"] = "Uranium rounds magazine",
 		["character"] = "Player"
 	}
-	local descr = ""
+	local raw_data = {}
 	for _, effect in pairs(data.effects) do
 		if effect.unique then
-			descr = descr .. "[color=0.9098,0.7255,0.1373]"
+			raw_data[#raw_data+1] = "[color=0.9098,0.7255,0.1373]"
 		end
 		if effect.type == "force" then
 			if effect.modifier == "ammo_damage_modifier" then
-				descr = descr .. "+" .. effect.value * 100 .. "% "
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
 				if effect.ammo then
-					descr = descr .. effect.ammo .. " "
+					raw_data[#raw_data+1] = effect.ammo .. " "
 				end
-				descr = descr .. "Damage"
+				raw_data[#raw_data+1] = "Damage"
 			elseif effect.modifier == "gun_speed_modifier" then
-				descr = descr .. "+" .. effect.value * 100 .. "% "
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
 				if effect.ammo then
-					descr = descr .. effect.ammo .. " "
+					raw_data[#raw_data+1] = effect.ammo .. " "
 				end
-				descr = descr .. "Attackspeed"
+				raw_data[#raw_data+1] = "Attackspeed"
 			elseif effect.modifier == "character_running_speed_modifier" then
-				descr = descr .. "+" .. effect.value * 100 .. "% "
-				descr = descr .. "Movement speed"
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
+				raw_data[#raw_data+1] = "Movement speed"
 			elseif effect.modifier == "character_health_bonus" then
-				descr = descr .. "+" .. math.floor(effect.value) .. " Health (character)"
+				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " Health (character)"
 			elseif effect.modifier == "manual_mining_speed_modifier" then
-				descr = descr .. "+" .. effect.value * 100 .. "% "
-				descr = descr .. "Mining speed"
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
+				raw_data[#raw_data+1] = "Mining speed"
 			elseif effect.modifier == "manual_crafting_speed_modifier" then
-				descr = descr .. "+" .. effect.value * 100 .. "% "
-				descr = descr .. "Crafting speed"
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
+				raw_data[#raw_data+1] = "Crafting speed"
 			elseif effect.modifier == "character_inventory_slots_bonus" then
-				descr = descr .. "+" .. math.floor(effect.value) .. " "
-				descr = descr .. "Inventory slots"
+				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " "
+				raw_data[#raw_data+1] = "Inventory slots"
 			elseif effect.modifier == "character_reach_distance_bonus" then
-				descr = descr .. "+" .. math.floor(effect.value) .. " "
-				descr = descr .. "Reach distance"
+				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " "
+				raw_data[#raw_data+1] = "Reach distance"
 			elseif effect.modifier == "turret_attack_modifier" then
-				descr = descr .. "+" .. effect.value * 100 .. "% "
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% "
 				if effect.turret then
-					descr = descr .. (localization[effect.turret] or capitalize(effect.turret))
+					raw_data[#raw_data+1] = (localization[effect.turret] or capitalize(effect.turret))
 				else
-					descr = descr .. "Turret"
+					raw_data[#raw_data+1] = "Turret"
 				end
-				descr = descr .. " damage"
+				raw_data[#raw_data+1] = " damage"
 			else
-				descr = descr .. "+" .. effect.value .. " " .. effect.modifier .. "(???)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " " .. effect.modifier .. "(???)"
 			end
 		elseif effect.type == "giveitem" then
-			descr = descr .. "+" .. effect.per_second .. " " .. (localization[effect.item] or effect.item)
+			raw_data[#raw_data+1] = "+" .. effect.per_second .. " " .. (localization[effect.item] or effect.item)
 			if effect.per_second ~= 1 and localization[effect.item] and
 							(localization[effect.item]:sub(-5, -1) == "plate" or localization[effect.item]:sub(-5, -1) == "brick" or
 											localization[effect.item]:sub(-8, -1) == "magazine") then
-				descr = descr .. "s"
+				raw_data[#raw_data+1] = "s"
 			end
-			descr = descr .. " per second"
+			raw_data[#raw_data+1] = " per second"
 		elseif effect.type == "other" then
 			if effect.modifier == "income" then
-				descr = descr .. "+" .. effect.value .. " Gold per second"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Gold per second"
 			elseif effect.modifier == "crit" then
-				descr = descr .. "+" .. effect.value * 100 .. "% Crit"
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Crit"
 			elseif effect.modifier == "critdamage" then
-				descr = descr .. "+" .. effect.value * 100 .. "% Crit-damage"
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Crit-damage"
 			elseif effect.modifier == "armor" then
-				descr = descr .. "+" .. math.floor(effect.value) .. " Armor (character)"
+				raw_data[#raw_data+1] = "+" .. floor(effect.value) .. " Armor (character)"
 			elseif effect.modifier == "thorns" then
-				descr = descr .. "+" .. effect.value .. " Thorns damage (character)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Thorns damage (character)"
 			elseif effect.modifier == "regen" then
-				descr = descr .. "+" .. effect.value .. " HP/s (character)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " HP/s (character)"
 			elseif effect.modifier == "towerhp" then
-				descr = descr .. "+" .. effect.value .. " Tower HP"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Tower HP"
 			elseif effect.modifier == "chardamage" then
-				descr = descr .. "+" .. effect.value .. " Melee damage"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Melee damage"
 			elseif effect.modifier == "repair" then
-				descr = descr .. "+" .. effect.value .. "% Global repairs/s"
+				raw_data[#raw_data+1] = "+" .. effect.value .. "% Global repairs/s"
 			elseif effect.modifier == "pctregen" then
-				descr = descr .. "+" .. effect.value .. "% HP/s (character)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. "% HP/s (character)"
 			elseif effect.modifier == "lifesteal" then
-				descr = descr .. "+" .. effect.value .. " Life stolen per hit (character)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Life stolen per hit (character)"
 			elseif effect.modifier == "pctlifesteal" then
-				descr = descr .. "+" .. effect.value .. "% Lifesteal (character)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. "% Lifesteal (character)"
 			elseif effect.modifier == "energy" then
-				descr = descr .. "+" .. effect.value .. " kW energy production (character/vehicle)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " kW energy production (character/vehicle)"
 			elseif effect.modifier == "revive" then
-				descr = descr .. "Instead of dying, you become invulnerable for " .. effect.value .. " seconds (300s cooldown)"
+				raw_data[#raw_data+1] = "Instead of dying, you become invulnerable for " .. effect.value .. " seconds (300s cooldown)"
 			elseif effect.modifier == "stun" then
-				descr = descr .. "+" .. effect.value * 100 .. "% Stun chance"
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Stun chance"
 			elseif effect.modifier == "momentum" then
 				-- descr = descr.."While moving, your movement speed stacks up every 2 seconds, up to 10 times"
-				descr = descr .. "Running increases your movement speed every second, up to 5 times"
+				raw_data[#raw_data+1] = "Running increases your movement speed every second, up to 5 times"
 			elseif effect.modifier == "immolation" then
 				-- descr = descr.."While moving, your movement speed stacks up every 2 seconds, up to 10 times"
-				descr = descr .. "+" .. effect.value .. " Aura damage/s (+flamethrower modifiers) (toggleable)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Aura damage/s (+flamethrower modifiers) (toggleable)"
 			else
-				descr = descr .. "+" .. effect.value .. " " .. effect.modifier .. "(???)"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " " .. effect.modifier .. "(???)"
 			end
 		elseif effect.type == "spellpack" then
 			if effect.modifier == "cdr" then
-				descr = descr .. "+" .. effect.value * 100 .. "% Cooldown reduction"
+				raw_data[#raw_data+1] = "+" .. effect.value * 100 .. "% Cooldown reduction"
 			elseif effect.modifier == "max_mana" then
-				descr = descr .. "+" .. effect.value .. " Mana"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Mana"
 			elseif effect.modifier == "max_spirit" then
-				descr = descr .. "+" .. effect.value .. " Spirit"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Spirit"
 			elseif effect.modifier == "mana_reg" then
-				descr = descr .. "+" .. effect.value .. " Mana/s"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Mana/s"
 			elseif effect.modifier == "spirit_reg" then
-				descr = descr .. "+" .. effect.value .. " Spirit/s"
+				raw_data[#raw_data+1] = "+" .. effect.value .. " Spirit/s"
 			end
 		elseif effect.type == "remotecall" then
-			descr = descr .. effect.description
+			raw_data[#raw_data+1] = effect.description
 			-- effect.mod
 			-- effect.func
 			-- effect.param (required!)
@@ -1018,23 +1024,47 @@ function make_description(data)
 			-- {type = "remotecall", mod = "spell-pack", func = "modforce", param = "max_mana", value = 100, description = "+100 Max Mana"}
 		end
 		if effect.periodical then
-			descr = descr .. "/hour"
+			raw_data[#raw_data+1] = "/hour"
 		end
 		if effect.unique then
 			if type(effect.unique) == "number" then
-				descr = descr .. " (unique)[/color]"
+				raw_data[#raw_data+1] = " (unique)[/color]"
 			else
-				descr = descr .. " (unique: " .. effect.unique .. ")[/color]"
+				raw_data[#raw_data+1] = " (unique: " .. effect.unique .. ")[/color]"
 			end
 		end
-		descr = descr .. "\n"
+		raw_data[#raw_data+1] = "\n"
 	end
-	if descr:sub(-1) == "\n" and not data.description then
-		descr = descr:sub(1, -2)
+	-- if descr:sub(-1) == "\n" and not data.description then
+	-- 	descr = descr:sub(1, -2)
+	-- else
+
+	if data.description then
+		raw_data[#raw_data+1] = data.description
+	end
+
+	-- end
+
+	-- TODO: move to data stage
+	-- Probably, it's overenginering, especially on the control stage!
+	local final_data = {}
+	if #raw_data > 17 then
+		for i=1, ceil(#raw_data/20)+1 do
+			final_data[i] = {""}
+		end
+		for i2, _data in pairs(raw_data) do
+			local i1 = floor(i2/20)
+			final_data[i1+1][(i2 + 1) - (i1 * 20 - i1)] = _data
+		end
 	else
-		descr = descr .. (data.description or "")
+		final_data = raw_data
 	end
-	return descr
+
+	if #final_data > 0 then
+		return {"", table.unpack(final_data)}
+	else
+		return ""
+	end
 end
 -- EDIT: DON'T USE THE "PLAYER" TYPE ANYMORE, AS IT'S EFFECTS GET LOST ON DEATH
 

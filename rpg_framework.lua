@@ -998,7 +998,7 @@ function update_items(force)
 			local item = items[data.item]
 			local gui = equipment_table["item_"..i]
 			gui.sprite = data.item
-			gui.tooltip = item.name.."\n\n"..item.description
+			gui.tooltip = {"", data.name, "\n\n", data.description}
 			if item.stack_size then
 				gui.number = data.count
 			else
@@ -1244,7 +1244,7 @@ function open_market(player, selected_item)
 				end
 				button = table.add{type="sprite-button", name = name, number=buy_item(player.force,name,true), sprite = name, style = style}
 			end
-			button.tooltip = data.name.."\n\n"..data.description
+			button.tooltip = {"", data.name, "\n\n", data.description}
 			style_item_button(button)
 			button.style.width = 50
 			button.style.height = 50
@@ -1271,18 +1271,19 @@ function get_amount_in_inventory(force,item)
 	end
 	return count
 end
-function add_parts_to_gui(force,item, gui, amount)
-	local main_flow = gui.add{type="flow", name=item, direction = "vertical"}
+function add_parts_to_gui(force, item_name, gui, amount)
+	local main_flow = gui.add{type="flow", name=item_name, direction = "vertical"}
 	main_flow.style.horizontal_align = "center"
 	local flow = main_flow.add{type="flow", name="market_buy_item", direction = "vertical"}
 	flow.style.horizontal_align = "center"
-	local inventory_amount = get_amount_in_inventory(force,item)
+	local inventory_amount = get_amount_in_inventory(force,item_name)
 	local style = "quick_bar_slot_button"
 	if inventory_amount > 0 then
 		style = "shortcut_bar_button_green"
 	end
-	local button = flow.add{type="sprite-button", name=item, sprite = item, number = buy_item(force,item,true), style = style}
-	button.tooltip = global.items[item].name.."\n\n"..global.items[item].description
+	local button = flow.add{type="sprite-button", name=item_name, sprite = item_name, number = buy_item(force,item_name,true), style = style}
+	local item = global.items[item_name]
+	button.tooltip = {"", item.name, "\n\n", item.description}
 	style_item_button(button)
 	button.style.width = 50
 	button.style.height = 50
@@ -1291,13 +1292,13 @@ function add_parts_to_gui(force,item, gui, amount)
 	if inventory_amount < amount then
 		label.style.font_color = {r=0.7,g=0.7,b=0.7}
 	end
-	if global.items[item].parts then
-		local partstable = main_flow.add{type="table", name = "parts", column_count = #global.items[item].parts}
+	if item.parts then
+		local partstable = main_flow.add{type="table", name = "parts", column_count = #item.parts}
 		partstable.style.cell_padding =7
 		partstable.vertical_centering =false
 		partstable.draw_vertical_lines=true
 		partstable.style.horizontal_align = "center"
-		for _, part in pairs(global.items[item].parts) do
+		for _, part in pairs(item.parts) do
 			add_parts_to_gui(force,part.name, partstable, part.count)
 		end
 	end
@@ -1334,7 +1335,7 @@ function create_equipment_gui(player)
 		local item = global.items[data.item]
 		local item_gui = equipment_table["item_"..i]
 		item_gui.sprite = data.item
-		item_gui.tooltip = item.name.."\n\n"..item.description
+		item_gui.tooltip = {"", data.name, "\n\n", data.description}
 		if item.stack_size then
 			item_gui.number = data.count
 		else
