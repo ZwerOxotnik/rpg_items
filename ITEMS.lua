@@ -975,7 +975,7 @@ function make_description(data)
 			elseif effect.modifier == "armor" then
 				raw_data[#raw_data+1] = {"", "+" .. floor(effect.value) .. " ", {"gui.armor"}, '(', {"gui.character"}, ')'}
 			elseif effect.modifier == "thorns" then
-				raw_data[#raw_data+1] = {"rpg-items-bonuses.income", effect.value, {"gui.character"}}
+				raw_data[#raw_data+1] = {"rpg-items-bonuses.thorns", effect.value, {"gui.character"}}
 			elseif effect.modifier == "regen" then
 				raw_data[#raw_data+1] = {"rpg-items-bonuses.regen", effect.value, {"gui.character"}}
 			elseif effect.modifier == "pctregen" then
