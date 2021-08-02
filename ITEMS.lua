@@ -6,7 +6,7 @@ local floor = math.floor
 ---@return table|boolean
 local function merge_localization(raw_data)
 	local final_data = {}
-	if #raw_data > 399 then
+	if #raw_data >= 380 then
 			log("Too much data")
 			return false
 	elseif #raw_data > 10 then
