@@ -1,6 +1,36 @@
 local ceil = math.ceil
 local floor = math.floor
 
+
+---@param raw_data table
+---@return table|boolean
+local function merge_localization(raw_data)
+	local final_data = {}
+	if #raw_data > 399 then
+			log("Too much data")
+			return false
+	elseif #raw_data > 10 then
+		for i=1, ceil(#raw_data/20)+1 do
+			final_data[i] = {""}
+		end
+		local i1 = 1
+		local i2 = 2
+		for _, _data in pairs(raw_data) do
+			final_data[i1][i2] = _data
+			if i2 >= 20 then
+		    i1 = i1 + 1
+		    i2 = 2
+			else
+		    i2 = i2 + 1
+			end
+		end
+	else
+		final_data = raw_data
+	end
+
+	return final_data
+end
+
 function make_items()
 	global.items = {
 		["rpgitems_health_potion"] = {
@@ -1047,24 +1077,13 @@ function make_description(data)
 
 	if data.description then
 		raw_data[#raw_data+1] = data.description
+	elseif raw_data[#raw_data] == "\n" then
+		raw_data[#raw_data] = nil
 	end
 
 	-- end
 
-	-- TODO: move to data stage
-	-- Probably, it's overenginering, especially on the control stage!
-	local final_data = {}
-	if #raw_data > 17 then
-		for i=1, ceil(#raw_data/20)+1 do
-			final_data[i] = {""}
-		end
-		for i2, _data in pairs(raw_data) do
-			local i1 = floor(i2/20)
-			final_data[i1+1][(i2 + 1) - (i1 * 20 - i1)] = _data
-		end
-	else
-		final_data = raw_data
-	end
+	local final_data = merge_localization(raw_data)
 
 	if #final_data > 0 then
 		return {"", table.unpack(final_data)}
