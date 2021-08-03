@@ -91,22 +91,24 @@ script.on_event(defines.events.on_gui_click, function(event)
 			if items.cooldown > 0 then
 				force_data.item_cooldowns[element.sprite] = items.cooldown
 			end
-			items.func(player)
-			if items.consumed then
-				local once = false
-				for i, data in pairs(force_data.items) do
-					if not once then
-						if data.item == element.sprite then
-							if data.count == 1 then
-								force_data.items[i] = nil
-							else
-								force_data.items[i].count = data.count-1
+			if items.func then -- TODO: fix this!!!
+				items.func(player)
+				if items.consumed then
+					local once = false
+					for i, data in pairs(force_data.items) do
+						if not once then
+							if data.item == element.sprite then
+								if data.count == 1 then
+									force_data.items[i] = nil
+								else
+									force_data.items[i].count = data.count-1
+								end
+								once = true
 							end
-							once = true
 						end
 					end
+					update_items(force)
 				end
-				update_items(force)
 			end
 		end
 	end

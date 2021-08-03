@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.19.7
+Date: 2021-08-03
+  Bugfixes:
+    - Hotfix to avoid crushes because of some items in some cases
+  Notes:
+    - Updated by ZwerOxotnik
+    - Actually, the mod isn't so safe for mutiplayer mode
+---------------------------------------------------------------------------------------------------
 Version: 0.19.6
 Date: 2021-08-02
   Bugfixes:
