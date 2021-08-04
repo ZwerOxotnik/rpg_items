@@ -100,37 +100,17 @@ script.on_event(defines.events.on_gui_click, function(event)
 					talents_gui(p)
 				end
 			elseif item_name == "rpgitems_health_potion" then
-				for i = 1, 900 do
-					local tick = game.tick + i
-					if not global.on_tick[tick] then
-						global.on_tick[tick] = {}
-					end
-					table.insert(global.on_tick[tick], {
-						func = function(vars)
-							if vars.player.character and vars.player.character.health > 0 then
-								vars.player.character.health = vars.player.character.health + 0.1
-							end
-						end,
-						vars = {player = player}
-					})
+				local character = player.character
+				if character and character.valid then
+					character.health = character.health + 90
 				end
 			elseif item_name == "rpgitems_mana_potion" then
+				-- TODO: check
 				if remote.interfaces["spell-pack"] then
-					for i = 1, 30 do
-						local tick = game.tick + i * 30
-						if not global.on_tick[tick] then
-							global.on_tick[tick] = {}
-						end
-						table.insert(global.on_tick[tick], {
-							func = function(vars)
-									local players = remote.call("spell-pack", "get", "players")
-									local new_mod = math.min(players[vars.player.index].max_mana, players[vars.player.index].mana + 1)
-									players[vars.player.index].mana = new_mod
-									remote.call("spell-pack", "set", "players", players)
-								end,
-								vars = {player = player}
-						})
-					end
+					local players = remote.call("spell-pack", "get", "players")
+					local data = players[player.index]
+					data.mana = math.min(data.max_mana, data.mana + 30)
+					remote.call("spell-pack", "set", "players", players)
 				end
 			elseif item_name == "rpgitems_flamecloak" then
 				global.immolation[player.index] = not global.immolation[player.index]
