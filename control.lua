@@ -522,7 +522,9 @@ script.on_nth_tick(150, function(event)
 	local tick = game.tick
 	for character, _tick in pairs(global.indestructible_characters) do
 		if tick >= _tick then
-			character.destructible = true
+			if character and character.valid then
+				character.destructible = true
+			end
 			global.indestructible_characters[character] = nil
 		end
 	end
