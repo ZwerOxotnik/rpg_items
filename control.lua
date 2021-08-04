@@ -51,7 +51,7 @@ local function refresh_forces()
 end
 
 script.on_init( function()
-	global.on_tick = {}
+	global.indestructible_characters = global.indestructible_characters or {}
 	make_items()
 	global.all_talents = {
 	r={
@@ -147,6 +147,7 @@ script.on_event(defines.events.on_game_created_from_scenario, function()
 end)
 
 script.on_configuration_changed(function()
+	global.indestructible_characters = global.indestructible_characters or {}
 	-- if not global.version then
 		-- global.version = 1
 		-- for _, data in pairs(global.forces) do
@@ -286,14 +287,7 @@ end)
 --
 --	refresh_forces()
 --end
---
---script.on_event(defines.events.on_player_created, function(event)
---	if not global.on_tick[event.tick + 1] then global.on_tick[event.tick + 1] = {} end
---	local player = game.get_player(event.player_index)
---	table.insert(global.on_tick[event.tick + 1], function () on_player_created(player) end)
---
---end)
---
+
 script.on_event({defines.events.on_player_created,defines.events.on_forces_merged,defines.events.on_player_changed_force} , function(event)
 	refresh_forces()
 end)
@@ -328,18 +322,6 @@ script.on_event(defines.events.on_technology_effects_reset, function (event)
 		if modifier.type == "force" then
 			add_modifier(force, modifier, mult)
 		end
-	end
-end)
-
-script.on_event(defines.events.on_tick, function(event)
-	local tick = event.tick
-	if global.on_tick[tick] then
-		for _, tbl in pairs(global.on_tick[tick]) do
-			if tbl.func then -- TODO: fix this!!!
-				tbl.func(tbl.vars)
-			end
-		end
-		global.on_tick[tick]=nil
 	end
 end)
 
@@ -532,6 +514,16 @@ script.on_nth_tick(60, function(event)
 			else
 				entity.health = entity.health + entity.prototype.max_health/100*global.forces[force_name].bonuses.repair
 			end
+		end
+	end
+end)
+
+script.on_nth_tick(150, function(event)
+	local tick = game.tick
+	for character, _tick in pairs(global.indestructible_characters) do
+		if tick >= _tick then
+			character.destructible = true
+			global.indestructible_characters[character] = nil
 		end
 	end
 end)
@@ -740,7 +732,7 @@ script.on_event(defines.events.on_pre_player_died, function(event)
 
 	local item_cooldowns = force_data.item_cooldowns
 	if not item_cooldowns["rpgitems_crusader"] and not item_cooldowns["rpgitems_crusader_spepa"] then
-		local level = math.min(5,force_data.bonuses.revive)
+		local level = math.min(5, force_data.bonuses.revive)
 		local cdr = 0
 		if remote.interfaces["spell-pack"] then
 			local players = remote.call("spell-pack","get","players")
@@ -755,15 +747,7 @@ script.on_event(defines.events.on_pre_player_died, function(event)
 			character.health = 1
 			character.destructible = false
 			player.surface.create_entity{name = "rpgitems-halo-sticker-"..level, position= player.position, target = character}
-			if not global.on_tick[event.tick+level*60] then
-				global.on_tick[event.tick+level*60] = {}
-			end
-			table.insert(global.on_tick[event.tick+level*60], {
-				func = function(vars)
-					vars.char.destructible = true
-				end,
-				vars = {char = character}
-			})
+			global.indestructible_characters[character] = event.tick+level*60
 		end
 	end
 end)

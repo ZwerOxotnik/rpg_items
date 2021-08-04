@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.19.10
+Date: 2021-08-04
+  Changes:
+    - Changed "Holy Crusader Helmet" (less accurate but stable)
+  Bugfixes:
+    - The mod seems stable for multiplayer now
+  Notes:
+    - Updated by ZwerOxotnik
+---------------------------------------------------------------------------------------------------
 Version: 0.19.9
 Date: 2021-08-04
   Changes:
