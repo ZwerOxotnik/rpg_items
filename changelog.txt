@@ -1,11 +1,20 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.19.8
+Date: 2021-08-04
+  Bugfixes:
+    - Slightly stabler
+    - Fixed "Amnesia book"
+  Notes:
+    - Updated by ZwerOxotnik
+    - Please, do not use items with open shop
+---------------------------------------------------------------------------------------------------
 Version: 0.19.7
 Date: 2021-08-03
   Bugfixes:
     - Hotfix to avoid crushes because of some items in some cases
   Notes:
     - Updated by ZwerOxotnik
-    - Actually, the mod isn't so safe for mutiplayer mode
+    - Apparently, the mod isn't so stable for mutiplayer mode
 ---------------------------------------------------------------------------------------------------
 Version: 0.19.6
 Date: 2021-08-02

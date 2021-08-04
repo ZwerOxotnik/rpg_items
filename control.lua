@@ -19,7 +19,7 @@ remote.add_interface("rpg-items", {
 			if not global.forces[force.name] then return false end
 			return global.forces[force.name].money
 		end,
-		set_item = function(item, tbl)
+		set_item = function(item, tbl) -- TODO: change
 			global.items[item] = tbl
 			if global.items[item].func then
 				global.items[item].func = load(global.items[item].func)
@@ -132,115 +132,103 @@ script.on_init( function()
 	--global.eq_gui_clicks = {}
 	global.talents = {}
 	refresh_forces()
-	if game.tick < 10 and not remote.interfaces["rpgitems_dont_make_market"] then
-		if not global.on_tick[game.tick+2] then
-			global.on_tick[game.tick+2] = {}
-		end
-		table.insert(global.on_tick[game.tick+2], {
-			func = function(vars)
-				local surface = game.surfaces[1]
-				local pos = surface.find_non_colliding_position("rocket-silo", {x=0,y=0}, 50, 0.5, true)
-				if pos then
-					local market = surface.create_entity{name = "rpgitems-market", position = pos, force = "player"}
-					market.minable = false
-				end
-			end,
-			vars = {}
-		})
-	end
 	-- global.version = 3
 end)
 
+script.on_event(defines.events.on_game_created_from_scenario, function()
+	if remote.interfaces["rpgitems_dont_make_market"] then return end
+
+	local surface = game.surfaces[1]
+	local pos = surface.find_non_colliding_position("rocket-silo", {x=0,y=0}, 50, 0.5, true)
+	if pos then
+		local market = surface.create_entity{name = "rpgitems-market", position = pos, force = "player"}
+		market.minable = false
+	end
+end)
+
 script.on_configuration_changed(function()
-	if not global.version then
-		global.version = 1
-		for _, data in pairs(global.forces) do
-			if data.bonuses.revive > 0 then
-				data.bonuses.revive = 5
-			end
-		end
-		if global.items["rpgitems_crusader"].effects[6].modifier == "revive" then
-			global.items["rpgitems_crusader"].effects[6].value = 5
-		else
-			game.print("Error migrating the crusader buff, please report this issue to the author")
-		end
-		if global.items["rpgitems_crusader_spepa"].effects[7].modifier == "revive" then
-			global.items["rpgitems_crusader_spepa"].effects[7].value = 5
-		else
-			game.print("Error migrating the crusader buff, please report this issue to the author")
-		end
-	end
-	if global.version < 2 then
-		global.version = 2
-		for _, data in pairs(global.forces) do
-			data.bonus_talents = 0
-		end
-		if global.items["rpgitems_amnesia_book"] then
-			global.items["rpgitems_amnesia_book"].func = function(player)
-				global.talents[player.force.name].ready = nil
-				global.forces[player.force.name].bonus_talents = global.forces[player.force.name].bonus_talents +1
-				for _, p in pairs(global.forces[player.force.name].players) do
-					talents_gui(p)
-				end
-			end
-			global.items["rpgitems_amnesia_book"].description = "Allows you to reset your talents\nGrants +4 talent points (RGBW)\nChanged per hour bonuses will start from 0!"
-			global.items["rpgitems_amnesia_book"].price = 35000
-		end
-	end
-	if global.version <3 then
-		global.version = 3
-		if remote.interfaces["spell-pack"] then
-			for force_name, force_data in pairs(global.forces) do
-				for mod_id, modifier in pairs(force_data.modifiers) do
-					if modifier.type == "spellpack" then
-						local mult = 1
-						if modifier.periodical then
-							mult = modifier.periodical
-						end
-						local players =remote.call("spell-pack","get","players")
-						for _, player in pairs(global.forces[force_name].players) do
-							local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
-							players[player.index][modifier.modifier] = new_mod
-						end
-						remote.call("spell-pack","set","players",players)
+	-- if not global.version then
+		-- global.version = 1
+		-- for _, data in pairs(global.forces) do
+		-- 	if data.bonuses.revive > 0 then
+		-- 		data.bonuses.revive = 5
+		-- 	end
+		-- end
+		-- if global.items["rpgitems_crusader"].effects[6].modifier == "revive" then
+		-- 	global.items["rpgitems_crusader"].effects[6].value = 5
+		-- else
+		-- 	game.print("Error migrating the crusader buff, please report this issue to the author")
+		-- end
+		-- if global.items["rpgitems_crusader_spepa"].effects[7].modifier == "revive" then
+		-- 	global.items["rpgitems_crusader_spepa"].effects[7].value = 5
+		-- else
+		-- 	game.print("Error migrating the crusader buff, please report this issue to the author")
+		-- end
+	-- end
+	-- if global.version < 2 then
+	-- 	global.version = 2
+	-- 	for _, data in pairs(global.forces) do
+	-- 		data.bonus_talents = 0
+	-- 	end
+	-- 	if global.items["rpgitems_amnesia_book"] then
+	-- 		global.items["rpgitems_amnesia_book"].description = "Allows you to reset your talents\nGrants +4 talent points (RGBW)\nChanged per hour bonuses will start from 0!"
+	-- 		global.items["rpgitems_amnesia_book"].price = 35000
+	-- 	end
+	-- end
+	-- if global.version <3 then
+	-- 	global.version = 3
+	-- 	if remote.interfaces["spell-pack"] then
+	-- 		for force_name, force_data in pairs(global.forces) do
+	-- 			for mod_id, modifier in pairs(force_data.modifiers) do
+	-- 				if modifier.type == "spellpack" then
+	-- 					local mult = 1
+	-- 					if modifier.periodical then
+	-- 						mult = modifier.periodical
+	-- 					end
+	-- 					local players =remote.call("spell-pack","get","players")
+	-- 					for _, player in pairs(global.forces[force_name].players) do
+	-- 						local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
+	-- 						players[player.index][modifier.modifier] = new_mod
+	-- 					end
+	-- 					remote.call("spell-pack","set","players",players)
 
-						if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
-							remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
-						else
-							force_data.modifiers[mod_id] = nil
-							game.print("Please update Spell-Pack")
-						end
-					end
-				end
-				for mod_id, modifier in pairs(force_data.talent_modifiers) do
-					if modifier.type == "spellpack" then
-						local mult = 1
-						if modifier.periodical then
-							mult = modifier.periodical
-						end
-						local players =remote.call("spell-pack","get","players")
-						for _, player in pairs(global.forces[force_name].players) do
-							local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
-							players[player.index][modifier.modifier] = new_mod
-						end
-						remote.call("spell-pack","set","players",players)
+	-- 					if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
+	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
+	-- 					else
+	-- 						force_data.modifiers[mod_id] = nil
+	-- 						game.print("Please update Spell-Pack")
+	-- 					end
+	-- 				end
+	-- 			end
+	-- 			for mod_id, modifier in pairs(force_data.talent_modifiers) do
+	-- 				if modifier.type == "spellpack" then
+	-- 					local mult = 1
+	-- 					if modifier.periodical then
+	-- 						mult = modifier.periodical
+	-- 					end
+	-- 					local players =remote.call("spell-pack","get","players")
+	-- 					for _, player in pairs(global.forces[force_name].players) do
+	-- 						local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
+	-- 						players[player.index][modifier.modifier] = new_mod
+	-- 					end
+	-- 					remote.call("spell-pack","set","players",players)
 
-						if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
-							remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
-						else
-							force_data.modifiers[mod_id] = nil
-							game.print("Please update Spell-Pack")
-						end
-					end
-				end
-			end
-		end
-		for _, data in pairs(global.items) do
-			if data.requires == "spell-pack" or data.conflicts == "spell-pack" then
-				data.andversion = 18
-			end
-		end
-	end
+	-- 					if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
+	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
+	-- 					else
+	-- 						force_data.modifiers[mod_id] = nil
+	-- 						game.print("Please update Spell-Pack")
+	-- 					end
+	-- 				end
+	-- 			end
+	-- 		end
+	-- 	end
+		-- for _, data in pairs(global.items) do
+		-- 	if data.requires == "spell-pack" or data.conflicts == "spell-pack" then
+		-- 		data.andversion = 18
+		-- 	end
+		-- end
+	-- end
 	if game.active_mods["spell-pack"] and tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 and not global.use_spellpack then
 		global.use_spellpack = true
 		global.all_talents.b["t23"] = {type = "spellpack", modifier = "max_mana", value = 2}
@@ -262,7 +250,7 @@ script.on_configuration_changed(function()
 		global.all_talents.b["t23"] = nil
 		global.all_talents.b["t24"] = nil
 		global.all_talents.b["t25"] = nil
-		for i, data in pairs(global.talents) do
+		for _, data in pairs(global.talents) do
 			if data.b["t23"] then
 				data.b["t23"] = nil
 			end
@@ -292,7 +280,6 @@ script.on_configuration_changed(function()
 			game.print("Please update Spell-Pack")
 		end
 	end
-
 end)
 
 --function on_player_created(player)
@@ -344,11 +331,6 @@ script.on_event(defines.events.on_technology_effects_reset, function (event)
 	end
 end)
 
-
-
---script.on_configuration_changed(function()
---
---end)
 script.on_event(defines.events.on_tick, function(event)
 	local tick = event.tick
 	if global.on_tick[tick] then
@@ -470,7 +452,7 @@ script.on_nth_tick(61, function(event)
 end)
 
 function disable_immolation(player)
-	global.immolation [player.index] = nil
+	global.immolation[player.index] = nil
 	if player.character and player.character.valid and player.character.stickers then
 		for _, sticker in pairs(player.character.stickers) do
 			if sticker.name == "rpgitems-flamecloak-sticker" then
@@ -481,7 +463,7 @@ function disable_immolation(player)
 end
 script.on_nth_tick(25, function(event)
 	for _, player in pairs(game.players) do
-		if global.immolation [player.index] then
+		if global.immolation[player.index] then
 			local immolation_bonus = global.forces[player.force.name].bonuses.immolation
 			if immolation_bonus > 0 and player.character and player.character.valid then
 				local enemies = player.surface.find_entities_filtered{type = {"unit", "character"}, position = player.position, radius = 6}
@@ -499,7 +481,6 @@ script.on_nth_tick(25, function(event)
 end)
 
 script.on_nth_tick(60, function(event)
-
 	for id, data in pairs(global.forces) do
 		--income
 		--local player = game.players[id]

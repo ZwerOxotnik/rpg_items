@@ -88,27 +88,79 @@ script.on_event(defines.events.on_gui_click, function(event)
 		--end
 	elseif items and parent_name == "equipment_table" and not player.gui.center.rpgitems_market and (not force_data.item_cooldowns[element.sprite]) then
 		if items.cooldown then
+			local item_name = element.sprite
 			if items.cooldown > 0 then
-				force_data.item_cooldowns[element.sprite] = items.cooldown
+				force_data.item_cooldowns[item_name] = items.cooldown
 			end
-			if items.func then -- TODO: fix this!!!
-				items.func(player)
-				if items.consumed then
-					local once = false
-					for i, data in pairs(force_data.items) do
-						if not once then
-							if data.item == element.sprite then
-								if data.count == 1 then
-									force_data.items[i] = nil
-								else
-									force_data.items[i].count = data.count-1
-								end
-								once = true
+			if item_name == "rpgitems_amnesia_book" then
+				local force_name = player.force.name
+				global.talents[force_name].ready = nil
+				global.forces[force_name].bonus_talents = global.forces[force_name].bonus_talents + 1
+				for _, p in pairs(global.forces[force_name].players) do
+					talents_gui(p)
+				end
+			elseif item_name == "rpgitems_health_potion" then
+				for i = 1, 900 do
+					local tick = game.tick + i
+					if not global.on_tick[tick] then
+						global.on_tick[tick] = {}
+					end
+					table.insert(global.on_tick[tick], {
+						func = function(vars)
+							if vars.player.character and vars.player.character.health > 0 then
+								vars.player.character.health = vars.player.character.health + 0.1
 							end
+						end,
+						vars = {player = player}
+					})
+				end
+			elseif item_name == "rpgitems_mana_potion" then
+				if remote.interfaces["spell-pack"] then
+					for i = 1, 30 do
+						local tick = game.tick + i * 30
+						if not global.on_tick[tick] then
+							global.on_tick[tick] = {}
+						end
+						table.insert(global.on_tick[tick], {
+							func = function(vars)
+									local players = remote.call("spell-pack", "get", "players")
+									local new_mod = math.min(players[vars.player.index].max_mana, players[vars.player.index].mana + 1)
+									players[vars.player.index].mana = new_mod
+									remote.call("spell-pack", "set", "players", players)
+								end,
+								vars = {player = player}
+						})
+					end
+				end
+			elseif item_name == "rpgitems_flamecloak" then
+				global.immolation[player.index] = not global.immolation[player.index]
+			elseif item_name == "rpgitems_flamecloak_spepa" then
+				global.immolation[player.index] = not global.immolation[player.index]
+				if global.immolation[player.index] and player.character and player.character.valid then
+					player.surface.create_entity{
+						name = "rpgitems-flamecloak-sticker",
+						position = player.position,
+						target = player.character
+					}
+				else
+					disable_immolation(player)
+				end
+			end
+			if items.consumed then
+				local once = false
+				for i, data in pairs(force_data.items) do
+					if not once then
+						if data.item == element.sprite then
+							if data.count == 1 then
+								force_data.items[i] = nil
+							else
+								force_data.items[i].count = data.count-1
+							end
+							once = true
 						end
 					end
-					update_items(force)
 				end
+				update_items(force)
 			end
 		end
 	end

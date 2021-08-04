@@ -42,22 +42,7 @@ function make_items()
 			cooldown = 30,
 			consumed = true,
 			always_show_in_main_list = true,
-			func = function(player)
-				for i = 1, 900 do
-					local tick = game.tick + i
-					if not global.on_tick[tick] then
-						global.on_tick[tick] = {}
-					end
-					table.insert(global.on_tick[tick], {
-						func = function(vars)
-							if vars.player.character and vars.player.character.health > 0 then
-								vars.player.character.health = vars.player.character.health + 0.1
-							end
-						end,
-						vars = {player = player}
-					})
-				end
-			end
+			func = true
 		},
 		["rpgitems_mana_potion"] = {
 			effects = {},
@@ -70,25 +55,7 @@ function make_items()
 			requires = "spell-pack",
 			andversion = 18,
 			always_show_in_main_list = true,
-			func = function(player)
-				for i = 1, 30 do
-					local tick = game.tick + i * 30
-					if not global.on_tick[tick] then
-						global.on_tick[tick] = {}
-					end
-					table.insert(global.on_tick[tick], {
-						func = function(vars)
-							if remote.interfaces["spell-pack"] then
-								local players = remote.call("spell-pack", "get", "players")
-								local new_mod = math.min(players[vars.player.index].max_mana, players[vars.player.index].mana + 1)
-								players[vars.player.index].mana = new_mod
-								remote.call("spell-pack", "set", "players", players)
-							end
-						end,
-						vars = {player = player}
-					})
-				end
-			end
+			func = true
 		},
 		["rpgitems_amnesia_book"] = {
 			effects = {},
@@ -99,13 +66,7 @@ function make_items()
 			cooldown = 30,
 			consumed = true,
 			always_show_in_main_list = true,
-			func = function(player)
-				global.talents[player.force.name].ready = nil
-				global.forces[player.force.name].bonus_talents = global.forces[player.force.name].bonus_talents + 1
-				for _, p in pairs(global.forces[player.force.name].players) do
-					talents_gui(p)
-				end
-			end
+			func = true
 		},
 		["rpgitems_shoes"] = {
 			effects = {{type = "force", modifier = "character_running_speed_modifier", value = 0.2, unique = "Shoes"}},
@@ -113,8 +74,7 @@ function make_items()
 			price = 10000,
 			stack_size = nil,
 			cooldown = nil,
-			consumed = nil,
-			func = nil
+			consumed = nil
 		},
 		["rpgitems_boots_0"] = {
 			effects = {
@@ -405,18 +365,7 @@ function make_items()
 			requires = "spell-pack",
 			andversion = 18,
 			price = 15000,
-			func = function(player)
-				global.immolation[player.index] = not global.immolation[player.index]
-				if global.immolation[player.index] and player.character and player.character.valid then
-					player.surface.create_entity{
-						name = "rpgitems-flamecloak-sticker",
-						position = player.position,
-						target = player.character
-					}
-				else
-					disable_immolation(player)
-				end
-			end,
+			func = true,
 			parts = {
 				{name = "rpgitems_lavalamp", count = 1}, {name = "rpgitems_armor_health", count = 1},
 				-- {name = "rpgitems_regeneration_0", count = 1},
@@ -439,9 +388,7 @@ function make_items()
 			conflicts = "spell-pack",
 			andversion = 18,
 			price = 15000,
-			func = function(player)
-				global.immolation[player.index] = not global.immolation[player.index]
-			end,
+			func = true,
 			parts = {
 				{name = "rpgitems_lavalamp", count = 1},
 				{name = "rpgitems_armor_health", count = 1},
@@ -1134,7 +1081,7 @@ end
 --  item (the internal item name)
 --  per_second (amount of items per second, can be less than 0)
 
--- func tutorial:
+-- func tutorial [outdated]:
 -- Items need to have a cooldown for this.
 -- As demonstrated in the health potion, you can execute stuff later.
 -- Use the method demonstrated there to first create a table on the tick you want to execute on, then insert a function in that table.
