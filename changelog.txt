@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.19.12
+Date: 2021-08-05
+  Changes:
+    - Added Russian translation (not full translation)
+  Bugfixes:
+    - Fixed description for "Book of amnesia"
+  Notes:
+    - Translations: https://crowdin.com/project/factorio-mods-localization
+    - Updated by ZwerOxotnik
+---------------------------------------------------------------------------------------------------
 Version: 0.19.11
 Date: 2021-08-04
   Bugfixes:
