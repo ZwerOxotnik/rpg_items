@@ -3,32 +3,37 @@ require("rpg_framework")
 
 
 local random = math.random
+local floor = math.floor
+local max = math.max
+local min = math.min
+local RED_COLOR = {r=1,g=0,b=0}
 
 
 remote.add_interface("rpg-items", {
-		get = function(field) return global[field] end,
-		set = function(field, value)
-			global[field] = value
-		end,
-		add_gold = function(force, value)
-			if not global.forces[force.name] then return false end
-			global.forces[force.name].money = math.max(0,global.forces[force.name].money + value)
-			return true
-		end,
-		get_gold = function(force)
-			if not global.forces[force.name] then return false end
-			return global.forces[force.name].money
-		end,
-		set_item = function(item, tbl) -- TODO: change
-			global.items[item] = tbl
-			if global.items[item].func then
-				global.items[item].func = load(global.items[item].func)
-				if not type(global.items[item].func) == "function" then
-					error("couldn't load function")
-				end
+	get = function(field) return global[field] end,
+	set = function(field, value)
+		global[field] = value
+	end,
+	add_gold = function(force, value)
+		if not global.forces[force.name] then return false end
+		global.forces[force.name].money = max(0,global.forces[force.name].money + value)
+		return true
+	end,
+	get_gold = function(force)
+		if not global.forces[force.name] then return false end
+		return global.forces[force.name].money
+	end,
+	set_item = function(item, tbl) -- TODO: change
+		global.items[item] = tbl
+		if global.items[item].func then
+			global.items[item].func = load(global.items[item].func)
+			if not type(global.items[item].func) == "function" then
+				error("couldn't load function")
 			end
 		end
-	  })
+	end
+})
+
 
 local function refresh_forces()
 	for _, force in pairs(game.forces) do
@@ -379,7 +384,7 @@ script.on_nth_tick(6, function(event)
 					local temp_batteries = 0
 					for _, eq in pairs(target_entity.grid.equipment) do
 						if eq.type == "battery-equipment" and eq.energy < eq.max_energy then
-							local charging = math.min(remaining_electricity/batteries, eq.max_energy-eq.energy)
+							local charging = min(remaining_electricity/batteries, eq.max_energy-eq.energy)
 							eq.energy = eq.energy + charging
 							used_electricity = used_electricity + charging
 							if eq.energy < eq.max_energy then
@@ -485,7 +490,7 @@ script.on_nth_tick(60, function(event)
 			end
 		end
 		for _, player in pairs(data.players) do
-			player.gui.left.rpgitems_item_gui.money.caption = math.floor(global.forces[id].money).."[img=rpgitems-coin]"
+			player.gui.left.rpgitems_item_gui.money.caption = floor(global.forces[id].money).."[img=rpgitems-coin]"
 			--cooldowns
 			if update then
 				update_items(game.forces[id])
@@ -495,7 +500,7 @@ script.on_nth_tick(60, function(event)
 				for item, cached in pairs(global.giveitem_cache[player.index]) do
 					local in_inventory = player.get_main_inventory().get_item_count(item)
 					if cached >= 1 and in_inventory < 200 then
-						local inserted = player.insert{name=item, count = math.min(200-in_inventory,math.floor(cached))}
+						local inserted = player.insert{name=item, count = min(200-in_inventory,floor(cached))}
 						global.giveitem_cache[player.index][item] = global.giveitem_cache[player.index][item] - inserted
 					end
 				end
@@ -542,7 +547,7 @@ script.on_event(defines.events.on_player_main_inventory_changed, function(event)
 	for item, cached in pairs(player_items_cache) do
 		local in_inventory = inventory.get_item_count(item)
 		if cached >= 1 and in_inventory < 200 then
-			local inserted = player.insert{name = item, count = math.min(200-in_inventory,math.floor(cached))}
+			local inserted = player.insert{name = item, count = min(200-in_inventory,floor(cached))}
 			player_items_cache[item] = player_items_cache[item] - inserted
 		end
 	end
@@ -604,19 +609,26 @@ script.on_event(defines.events.on_gui_closed, function(event)
 	end
 end)
 
-script.on_event(defines.events.on_entity_died, function(event)
-	if not event.force or not event.entity or not event.entity.valid or event.entity.type == "tree" then return end
-	local force = event.force.name
-	if global.forces[force] then
-		--local player_id = tonumber(event.force.name:sub(8))
-		global.forces[force].money = global.forces[force].money + 1
-		--event.entity.surface.create_entity{name= "flying-text", color = {r=0,g=0.7,b=0}, position = event.entity.position, render_player_index = player_id, text = "+1"}
-		for _, player in pairs(global.forces[force].players) do
-			player.gui.left.rpgitems_item_gui.money.caption = math.floor(global.forces[force].money).."[img=rpgitems-coin]"
-		end
-	end
 
-end)
+-- Seems kinda wrong
+script.on_event(defines.events.on_entity_died, function(event)
+	local force = event.force
+	local entity = event.entity
+	if not force or not entity or not entity.valid then return end
+	local force_name = force.name
+	local force_data = global.forces[force_name]
+	if not force_data then return end
+
+	--local player_id = tonumber(force.name:sub(8))
+	force_data.money = force_data.money + 1
+	--entity.surface.create_entity{name= "flying-text", color = {r=0,g=0.7,b=0}, position = entity.position, render_player_index = player_id, text = "+1"}
+	for _, player in pairs(force_data.players) do -- TODO: Check
+		player.gui.left.rpgitems_item_gui.money.caption = floor(force_data.money).."[img=rpgitems-coin]"
+	end
+end, {
+	{filter = "type", type = "tree", invert = true, mode = "and"},
+	{filter = "type", type = "simple-entity", invert = true, mode = "and"},
+})
 
 
 script.on_event(defines.events.on_player_died, function(event)
@@ -624,7 +636,7 @@ script.on_event(defines.events.on_player_died, function(event)
 	if player.gui.center.rpgitems_market then player.gui.center.rpgitems_market.destroy() end
 end)
 
-function apply_armor (event, armor)
+function apply_armor(event, armor)
 	local grid = event.entity.grid
 	local bonus_healing = 0
 	if grid and grid.max_shield > 0 then
@@ -633,13 +645,13 @@ function apply_armor (event, armor)
 		if armor_inv[1].valid_for_read and armor_inv[1].prototype.resistances then
 			local event_damage_type = event.damage_type.name
 			if armor_inv[1].prototype.resistances[event_damage_type] then
-				actual_damage = math.max(0, (event.original_damage_amount - armor_inv[1].prototype.resistances[event_damage_type].decrease) * (1-armor_inv[1].prototype.resistances[event_damage_type].percent))
+				actual_damage = max(0, (event.original_damage_amount - armor_inv[1].prototype.resistances[event_damage_type].decrease) * (1-armor_inv[1].prototype.resistances[event_damage_type].percent))
 			end
 		end
 		local shield_healing = (actual_damage - event.final_damage_amount) *armor
-		bonus_healing = math.min(event.final_damage_amount, shield_healing)
+		bonus_healing = min(event.final_damage_amount, shield_healing)
 		shield_healing = shield_healing - bonus_healing
-		shield_healing = math.min(shield_healing,grid.max_shield - grid.shield)
+		shield_healing = min(shield_healing,grid.max_shield - grid.shield)
 
 		local missing_shield = grid.max_shield - grid.shield
 		if missing_shield > 0 then
@@ -658,20 +670,18 @@ end
 
 -- TODO: optimize
 script.on_event(defines.events.on_entity_damaged, function(event)
-	--print("orig: "..event.original_damage_amount)
-	--print("final: "..event.final_damage_amount )
 	local cause = event.cause
 	local entity = event.entity
 
-	if entity and entity.health >0 then
+	if entity then
 		local force = entity.force
 		local force_data = global.forces[force.name]
 		local force_bonuses = force_data.bonuses
 		if entity.type == "character" then
 			local damage_type = event.damage_type.name
 			local damage = force_bonuses.thorns
-			if cause and damage > 0 and damage_type ~="acid" and damage_type ~= "fire" then
-				cause.damage(damage, entity.force, damage_type)
+			if cause and damage > 0 then
+				cause.damage(damage, force, damage_type)
 			end
 			-- local player = entity.player
 			--if event.damage_type.name:sub(1,4)=="osp_" then
@@ -687,10 +697,9 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 	end
 
 	if cause and cause.valid then
-		local force_name = cause.force.name
-		local force_data = global.forces[force_name]
-		local force_bonuses = force_data.bonuses
+		local force_data = global.forces[cause.force.name]
 		if not force_data then return end
+		local force_bonuses = force_data.bonuses
 
 		if entity.valid then
 			local extradamage = 0
@@ -699,20 +708,20 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 			--	extradamage = global.forces[force].bonuses.chardamage*mult + (mult-1)*8
 			--	extradamage = entity.damage(extradamage, cause.force, "physical")
 			--end
-			if entity.valid and random() < force_bonuses.stun * (cause.type == "character" and 6 or 2) then
+			if random() < force_bonuses.stun * (cause.type == "character" and 6 or 2) then
 				--game.print(global.forces[force].bonuses.stun * (cause.type == "character" and 2 or 1))
 				if entity.type == "unit" or entity.type == "character" then
 					entity.surface.create_entity{ name="rpgitems-stun-sticker", position=entity.position, target=entity }
 				end
 			end
-			if entity.valid and entity.has_flag("breaths-air") and random() < force_bonuses.crit then
+			if entity.has_flag("breaths-air") and random() < force_bonuses.crit then
 				local pos =  entity.position
 				local surface = entity.surface
 				--local player_mult = 1
 				--if event.
 				extradamage = entity.damage((event.original_damage_amount+extradamage)*(1+force_bonuses.critdamage), cause.force, event.damage_type.name)
 				local dmg = extradamage + event.final_damage_amount
-				surface.create_entity{name="flying-text", position = pos, color = {r=1,g=0,b=0}, text = math.floor(dmg)}
+				surface.create_entity{name="flying-text", position = pos, color = RED_COLOR, text = floor(dmg)}
 			end
 			if cause.type == "character" then
 				if force_bonuses.pctlifesteal > 0 then
@@ -724,7 +733,12 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 			end
 		end
 	end
-end)
+end, {
+	{filter = "final-damage-amount", comparison = ">", value = 0, mode = "and"},
+	{filter = "final-health", comparison = ">", value = 0, mode = "and"},
+	{filter = "damage-type", type = "fire", invert = true, mode = "and"},
+	{filter = "damage-type", type = "acid", invert = true, mode = "and"},
+})
 
 script.on_event(defines.events.on_pre_player_died, function(event)
 	local player = game.get_player(event.player_index)
@@ -734,7 +748,7 @@ script.on_event(defines.events.on_pre_player_died, function(event)
 
 	local item_cooldowns = force_data.item_cooldowns
 	if not item_cooldowns["rpgitems_crusader"] and not item_cooldowns["rpgitems_crusader_spepa"] then
-		local level = math.min(5, force_data.bonuses.revive)
+		local level = min(5, force_data.bonuses.revive)
 		local cdr = 0
 		if remote.interfaces["spell-pack"] then
 			local players = remote.call("spell-pack","get","players")

@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.20.0
+Date: 2021-08-08
+  Bugfixes:
+    - Fixed some minor bugs
+    - Optimized some events
+  Notes:
+    - Translations: https://crowdin.com/project/factorio-mods-localization
+    - Updated by ZwerOxotnik
+---------------------------------------------------------------------------------------------------
 Version: 0.19.13
 Date: 2021-08-08
   Bugfixes:
