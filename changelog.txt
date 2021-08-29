@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.20.2
+Date: 2021-08-289
+  Bugfixes:
+    - Fixed adding of money when an entity of your team died
+  Notes:
+    - Translations: https://crowdin.com/project/factorio-mods-localization
+    - Updated by ZwerOxotnik
+---------------------------------------------------------------------------------------------------
 Version: 0.20.1
 Date: 2021-08-29
   Changes:

@@ -610,11 +610,11 @@ script.on_event(defines.events.on_gui_closed, function(event)
 end)
 
 
--- Seems kinda wrong
 script.on_event(defines.events.on_entity_died, function(event)
 	local force = event.force
 	local entity = event.entity
-	if not force or not entity or not entity.valid then return end
+	if not (force and entity and entity.valid) then return end
+	if entity.force == force then return end
 	local force_name = force.name
 	local force_data = global.forces[force_name]
 	if not force_data then return end
