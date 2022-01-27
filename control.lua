@@ -676,12 +676,13 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 	if entity then
 		local force = entity.force
 		local force_data = global.forces[force.name]
+		if force_data == nil then return end
+
 		local force_bonuses = force_data.bonuses
 		if entity.type == "character" then
-			local damage_type = event.damage_type.name
 			local damage = force_bonuses.thorns
 			if cause and damage > 0 then
-				cause.damage(damage, force, damage_type)
+				cause.damage(damage, force, event.damage_type.name)
 			end
 			-- local player = entity.player
 			--if event.damage_type.name:sub(1,4)=="osp_" then
@@ -698,9 +699,9 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 
 	if cause and cause.valid then
 		local force_data = global.forces[cause.force.name]
-		if not force_data then return end
-		local force_bonuses = force_data.bonuses
+		if force_data == nil then return end
 
+		local force_bonuses = force_data.bonuses
 		if entity.valid then
 			local extradamage = 0
 			--if event.damage_type.name == "chardamage" then
