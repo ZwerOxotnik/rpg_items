@@ -1,6 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.20.3
+Date: 2022-01-27
+  Bugfixes:
+    - Improved stability of "on_entity_damaged" event
+  Notes:
+    - Translations: https://crowdin.com/project/factorio-mods-localization
+    - Updated by ZwerOxotnik
+---------------------------------------------------------------------------------------------------
 Version: 0.20.2
-Date: 2021-08-289
+Date: 2021-08-29
   Bugfixes:
     - Fixed adding of money when an entity of your team died
   Notes:
@@ -9,9 +17,8 @@ Date: 2021-08-289
 ---------------------------------------------------------------------------------------------------
 Version: 0.20.1
 Date: 2021-08-29
-  Changes:
+  Locale:
     - Added Brazilian Portuguese translation (thanks to @BM123499 (Bruno Melo) on crowdin)
-  Notes:
     - Translations: https://crowdin.com/project/factorio-mods-localization (thank you for contributions, I really appreciate it)
 ---------------------------------------------------------------------------------------------------
 Version: 0.20.0
@@ -33,12 +40,12 @@ Date: 2021-08-08
 ---------------------------------------------------------------------------------------------------
 Version: 0.19.12
 Date: 2021-08-05
-  Changes:
+  Locale:
     - Added Russian translation (not full translation)
+    - Translations: https://crowdin.com/project/factorio-mods-localization
   Bugfixes:
     - Fixed description for "Book of amnesia"
   Notes:
-    - Translations: https://crowdin.com/project/factorio-mods-localization
     - Updated by ZwerOxotnik
 ---------------------------------------------------------------------------------------------------
 Version: 0.19.11
