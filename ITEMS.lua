@@ -52,7 +52,7 @@ function make_items()
 			stack_size = 10,
 			cooldown = 30,
 			consumed = true,
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			always_show_in_main_list = true,
 			func = true
@@ -181,7 +181,7 @@ function make_items()
 			name = {"", "[", {"rpg-items.staff"}, "]"},
 			description = {"rpg-items-description.staff"},
 			-- cooldown = 300,
-			conflicts = "spell-pack",
+			conflicts = "m-spell-pack",
 			andversion = 18,
 			price = 9000,
 			parts = {
@@ -204,7 +204,7 @@ function make_items()
 			name = {"", "[", {"rpg-items.staff"}, "]"},
 			description = {"rpg-items-description.staff_spepa"},
 			-- cooldown = 300,
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			price = 9000,
 			parts = {
@@ -318,7 +318,7 @@ function make_items()
 			name = {"", "[", {"rpg-items.crusader"}, "]"},
 			-- description = "[color=0.9098,0.7255,0.1373](unique: Crusader)[/color]",
 			cooldown = 300,
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			price = 11000,
 			parts = {
@@ -341,7 +341,7 @@ function make_items()
 			name = {"", "[", {"rpg-items.crusader"}, "]"},
 			-- description = "[color=0.9098,0.7255,0.1373](unique: Crusader)[/color]",
 			cooldown = 300,
-			conflicts = "spell-pack",
+			conflicts = "m-spell-pack",
 			andversion = 18,
 			price = 11000,
 			parts = {
@@ -362,7 +362,7 @@ function make_items()
 			name = {"", "[", {"rpg-items.flamecloak"}, "]"},
 			-- description = "[color=0.7,0.7,0.7]Stun chance is tripled for player attacks[/color]",
 			cooldown = 0,
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			price = 15000,
 			func = true,
@@ -385,7 +385,7 @@ function make_items()
 			name = {"", "[", {"rpg-items.flamecloak"}, "]"},
 			-- description = "[color=0.7,0.7,0.7]Stun chance is tripled for player attacks[/color]",
 			cooldown = 3,
-			conflicts = "spell-pack",
+			conflicts = "m-spell-pack",
 			andversion = 18,
 			price = 15000,
 			func = true,
@@ -445,7 +445,7 @@ function make_items()
 				{type = "spellpack", modifier = "max_mana", value = 30}, {type = "spellpack", modifier = "mana_reg", value = 0.5},
 				{type = "spellpack", modifier = "spirit_reg", value = 0.15}
 			},
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			name = {"", "[", {"rpg-items.spellpack_neclace"}, "]"},
 			price = 14000,
@@ -677,7 +677,7 @@ function make_items()
 				{type = "other", modifier = "repair", value = 0.15}, {type = "other", modifier = "energy", value = 250}
 			},
 			name = {"", "[", {"rpg-items.cards"}, "]"},
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			price = 10000,
 			parts = {
@@ -694,7 +694,7 @@ function make_items()
 				-- {type = "spellpack", modifier = "cdr", value = 0.1},
 			},
 			name = {"", "[", {"rpg-items.cards"}, "]"},
-			conflicts = "spell-pack",
+			conflicts = "m-spell-pack",
 			andversion = 18,
 			price = 10000,
 			parts = {
@@ -708,7 +708,7 @@ function make_items()
 				{type = "spellpack", modifier = "max_mana", value = 50}, {type = "spellpack", modifier = "mana_reg", value = 1},
 				{type = "spellpack", modifier = "spirit_reg", value = 0.3}, {type = "spellpack", modifier = "cdr", value = 0.3}
 			},
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			name = {"", "[", {"rpg-items.spellpack_helmet"}, "]"},
 			price = 25000,
@@ -782,7 +782,7 @@ function make_items()
 		},
 		["rpgitems_manareg_0"] = {
 			effects = {{type = "spellpack", modifier = "mana_reg", value = 0.5}},
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			name = {"", "[", {"rpg-items.manareg_0"}, "]"},
 			stack_size = 5,
@@ -791,7 +791,7 @@ function make_items()
 		},
 		["rpgitems_mana_0"] = {
 			effects = {{type = "spellpack", modifier = "max_mana", value = 20}},
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			name = {"", "[", {"rpg-items.mana_0"}, "]"},
 			stack_size = 5,
@@ -799,7 +799,7 @@ function make_items()
 		},
 		["rpgitems_grenade_damage_0"] = {
 			effects = {{type = "force", modifier = "ammo_damage_modifier", value = 0.2, ammo = "grenade"}},
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			name = {"", "[", {"rpg-items.grenade_damage_0"}, "]"},
 			stack_size = 5,
@@ -833,7 +833,7 @@ function make_items()
 			stack_size = 10,
 			-- description = "[color=0.7,0.7,0.7]Stun chance is tripled for player attacks[/color]",
 			-- cooldown = 300,
-			requires = "spell-pack",
+			requires = "m-spell-pack",
 			andversion = 18,
 			price = 15000
 			-- parts = {
@@ -851,7 +851,7 @@ function make_items()
 			parts = {}
 		}
 	}
-	-- if not game.active_mods["spell-pack"] then
+	-- if not game.active_mods["m-spell-pack"] then
 	--	global.items["rpgitems_mana_potion"] = nil
 	--	global.items["rpgitems_manareg_0"] = nil
 	-- end
@@ -1004,7 +1004,7 @@ function make_description(data)
 			-- remote.call(mod, func, force, param, +-value)
 			-- you need to format your item's description yourself, this script is only called on init for the items in this file.
 			-- example:
-			-- {type = "remotecall", mod = "spell-pack", func = "modforce", param = "max_mana", value = 100, description = "+100 Max Mana"}
+			-- {type = "remotecall", mod = "m-spell-pack", func = "modforce", param = "max_mana", value = 100, description = "+100 Max Mana"}
 		end
 		if effect.periodical then
 			raw_data[#raw_data+1] = "/hour"

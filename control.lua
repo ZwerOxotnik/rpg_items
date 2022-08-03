@@ -15,13 +15,15 @@ remote.add_interface("rpg-items", {
 		global[field] = value
 	end,
 	add_gold = function(force, value)
-		if not global.forces[force.name] then return false end
-		global.forces[force.name].money = max(0,global.forces[force.name].money + value)
+		local force_data = global.forces[force.name]
+		if not force_data then return false end
+		force_data.money = max(0, force_data.money + value)
 		return true
 	end,
 	get_gold = function(force)
-		if not global.forces[force.name] then return false end
-		return global.forces[force.name].money
+		local force_data = global.forces[force.name]
+		if not force_data then return false end
+		return force_data.money
 	end,
 	set_item = function(item, tbl) -- TODO: change
 		global.items[item] = tbl
@@ -47,7 +49,8 @@ local function refresh_forces()
 			global.forces[force.name].players = force.players
 			for _, player in pairs(global.forces[force.name].players) do
 				create_equipment_gui(player)
-				if not global.talents[player.force.name] or not global.talents[player.force.name].ready then
+				local talents_data = global.talents[player.force.name]
+				if not talents_data or not talents_data.ready then
 					talents_gui(player)
 				end
 			end
@@ -88,7 +91,7 @@ script.on_init( function()
 		["t26"] = {type = "force", modifier = "character_reach_distance_bonus", value = 1},
 	},
 }
-	if game.active_mods["spell-pack"] then
+	if game.active_mods["m-spell-pack"] then
 		global.use_spellpack = true
 		--global.all_talents.b["t21"] = {type = "other", modifier = "magic_resistance", value = 2}
 		--global.all_talents.b["t22"] = {type = "other", modifier = "magic_resistance", value = 0.06, periodical = 0}
@@ -198,7 +201,7 @@ script.on_configuration_changed(function()
 	-- 					end
 	-- 					remote.call("spell-pack","set","players",players)
 
-	-- 					if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
+	-- 					if tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 	-- 					else
 	-- 						force_data.modifiers[mod_id] = nil
@@ -219,7 +222,7 @@ script.on_configuration_changed(function()
 	-- 					end
 	-- 					remote.call("spell-pack","set","players",players)
 
-	-- 					if tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
+	-- 					if tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 	-- 					else
 	-- 						force_data.modifiers[mod_id] = nil
@@ -230,19 +233,19 @@ script.on_configuration_changed(function()
 	-- 		end
 	-- 	end
 		-- for _, data in pairs(global.items) do
-		-- 	if data.requires == "spell-pack" or data.conflicts == "spell-pack" then
+		-- 	if data.requires == "m-spell-pack" or data.conflicts == "m-spell-pack" then
 		-- 		data.andversion = 18
 		-- 	end
 		-- end
 	-- end
-	if game.active_mods["spell-pack"] and tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 and not global.use_spellpack then
+	if game.active_mods["m-spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 and not global.use_spellpack then
 		global.use_spellpack = true
 		global.all_talents.b["t23"] = {type = "spellpack", modifier = "max_mana", value = 2}
 		global.all_talents.b["t24"] = {type = "spellpack", modifier = "max_mana", value = 0.02, periodical = 0}
 		global.all_talents.b["t25"] = {type = "spellpack", modifier = "mana_reg", value = 0.05}
 		for i, data in pairs(global.forces) do
 			for id, item in pairs(data.items) do
-				if global.items[item.item].conflicts and global.items[item.item].conflicts == "spell-pack" then
+				if global.items[item.item].conflicts and global.items[item.item].conflicts == "m-spell-pack" then
 					data.money = data.money + get_sell_price(item.item)*item.count
 					data.items[id] = nil
 				end
@@ -251,7 +254,7 @@ script.on_configuration_changed(function()
 		end
 		game.print("Added spellpack talents and items :)")
 	end
-	if (not game.active_mods["spell-pack"] or tonumber(game.active_mods["spell-pack"]:sub(-2)) < 18) and global.use_spellpack then
+	if (game.active_mods["m-spell-pack"] or tonumber(game.active_mods["m-spell-pack"]:sub(-2)) < 18) and global.use_spellpack then
 		global.use_spellpack = false
 		global.all_talents.b["t23"] = nil
 		global.all_talents.b["t24"] = nil
@@ -267,22 +270,23 @@ script.on_configuration_changed(function()
 				data.b["t25"] = nil
 			end
 		end
-		for i, data in pairs(global.forces) do
-			for id, item in pairs(data.items) do
-				if global.items[item.item].requires and global.items[item.item].requires == "spell-pack" then
-					data.money = data.money + get_sell_price(item.item)*item.count
-					data.items[id] = nil
+		for i, force_data in pairs(global.forces) do
+			for id, item in pairs(force_data.items) do
+				local item_data = global.items[item.item]
+				if item_data.requires and item_data.requires == "m-spell-pack" then
+					force_data.money = force_data.money + get_sell_price(item.item)*item.count
+					force_data.items[id] = nil
 				end
 			end
-			for id, mod in pairs(data.talent_modifiers) do
+			for id, mod in pairs(force_data.talent_modifiers) do
 				if mod.type == "spellpack" then
-					data.talent_modifiers[id] = nil
+					force_data.talent_modifiers[id] = nil
 				end
 			end
 			update_items(game.forces[i])
 		end
 		game.print("Removed spellpack talents and items :(")
-		if game.active_mods["spell-pack"] then
+		if game.active_mods["m-spell-pack"] then
 			game.print("Please update Spell-Pack")
 		end
 	end
@@ -348,14 +352,16 @@ script.on_nth_tick(6, function(event)
 	if not global.forces then return end
 
 	for _, data in pairs(global.forces) do
+		local bonuses = data.bonuses
 		for _, player in pairs(data.players) do
-			local character = player.character
-			local bonuses = data.bonuses
-			if character then
-				character.health = character.health + bonuses.regen/10
-				if bonuses.pctregen > 0 then
-					character.health = character.health + (character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen
-					--game.print((character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen*10)
+			if player.valid then
+				local character = player.character
+				if character and character.valid then
+					character.health = character.health + bonuses.regen/10
+					if bonuses.pctregen > 0 then
+						character.health = character.health + (character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen
+						--game.print((character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen*10)
+					end
 				end
 			end
 		end
@@ -379,7 +385,7 @@ script.on_nth_tick(6, function(event)
 				end
 				--game.print(i)
 				local remaining_electricity = global.forces[player.force.name].bonuses.energy*10^2 -- 1/10 KJ
-				for i=1, 2 do
+				for _=1, 2 do
 					local used_electricity = 0
 					local temp_batteries = 0
 					for _, eq in pairs(target_entity.grid.equipment) do
@@ -426,7 +432,8 @@ script.on_nth_tick(6, function(event)
 	end
 end)
 
-script.on_nth_tick(61, function(event)
+--TODO: refactor/remove
+script.on_nth_tick(61, function()
 	for _, player in pairs(game.connected_players) do
 		local last = nil
 		for _, g in pairs(player.gui.left.children) do
@@ -448,16 +455,27 @@ function disable_immolation(player)
 		end
 	end
 end
-script.on_nth_tick(25, function(event)
-	for _, player in pairs(game.players) do
-		if global.immolation[player.index] then
+
+local _entity_search_filter = {type = {"unit", "character"}, position = {}, radius = 6}
+script.on_nth_tick(25, function()
+	local immolations = global.immolation
+	for _, player in pairs(game.connected_players) do
+		if immolations[player.index] then
 			local immolation_bonus = global.forces[player.force.name].bonuses.immolation
-			if immolation_bonus > 0 and player.character and player.character.valid then
-				local enemies = player.surface.find_entities_filtered{type = {"unit", "character"}, position = player.position, radius = 6}
-				local damage_mult = player.force.get_ammo_damage_modifier("flamethrower")+1
-				for _, enemy in pairs(enemies) do
-					if enemy.valid and enemy.force ~= player.force and not enemy.force.get_cease_fire(player.force) and not enemy.force.get_friend(player.force)then
-						enemy.damage(immolation_bonus*25/60 *damage_mult, player.force.name, "fire")
+			local character = player.character
+			if immolation_bonus > 0 and character and character.valid then
+				_entity_search_filter.position = player.position
+				local enemies = player.surface.find_entities_filtered(_entity_search_filter)
+				local player_force = player.force
+				local player_force_name = player_force.name
+				local damage_mult = player_force.get_ammo_damage_modifier("flamethrower") + 1
+				for i=1, #enemies do
+					local enemy = enemies[i]
+					if enemy.valid then
+						local enemy_force = enemy.force
+						if enemy_force ~= player_force and not enemy_force.get_cease_fire(player_force) and not enemy_force.get_friend(player_force) then
+							enemy.damage(immolation_bonus*25/60 *damage_mult, player_force_name, "fire")
+						end
 					end
 				end
 			else
@@ -467,41 +485,49 @@ script.on_nth_tick(25, function(event)
 	end
 end)
 
-script.on_nth_tick(60, function(event)
-	for id, data in pairs(global.forces) do
+-- TODO: Refactor
+local _stack_data = {name='', count=1}
+script.on_nth_tick(60, function()
+	for force_index, force_data in pairs(global.forces) do
 		--income
 		--local player = game.players[id]
-		data.money = data.money + data.bonuses.income
+		force_data.money = force_data.money + force_data.bonuses.income
 		local update = false
-		for field, cd in pairs(data.item_cooldowns) do
+		for field, cd in pairs(force_data.item_cooldowns) do
 			cd = cd -1
 			if cd <= 0 then
 				cd = nil
 			end
-			data.item_cooldowns[field] = cd
+			force_data.item_cooldowns[field] = cd
 			update = true
 		end
-		for item, persec in pairs(data.giveitem) do
-			for _, player in pairs(data.players) do
+		for item, persec in pairs(force_data.giveitem) do
+			for _, player in pairs(force_data.players) do
 				if not global.giveitem_cache[player.index] then
 					global.giveitem_cache[player.index] = {}
 				end
 				global.giveitem_cache[player.index][item] = (global.giveitem_cache[player.index][item] or 0) + persec
 			end
 		end
-		for _, player in pairs(data.players) do
-			player.gui.left.rpgitems_item_gui.money.caption = floor(global.forces[id].money).."[img=rpgitems-coin]"
+		local force = game.forces[force_index]
+		for _, player in pairs(force_data.players) do
+			player.gui.left.rpgitems_item_gui.money.caption = floor(force_data.money).."[img=rpgitems-coin]"
 			--cooldowns
 			if update then
-				update_items(game.forces[id])
+				update_items(force)
 			end
 			--giveitem
-			if player.character and player.character.valid and global.giveitem_cache[player.index] then
-				for item, cached in pairs(global.giveitem_cache[player.index]) do
-					local in_inventory = player.get_main_inventory().get_item_count(item)
+			local cached_given_items = global.giveitem_cache[player.index]
+			local character = player.character
+			local inventory = player.get_main_inventory()
+			if inventory and character and character.valid and cached_given_items then
+				for item, cached in pairs(cached_given_items) do
+					local in_inventory = inventory.get_item_count(item)
 					if cached >= 1 and in_inventory < 200 then
-						local inserted = player.insert{name=item, count = min(200-in_inventory,floor(cached))}
-						global.giveitem_cache[player.index][item] = global.giveitem_cache[player.index][item] - inserted
+						_stack_data.name = item
+						_stack_data.count = min(200-in_inventory,floor(cached))
+						local inserted = player.insert(_stack_data)
+						cached_given_items[item] = cached_given_items[item] - inserted
 					end
 				end
 			end
@@ -509,15 +535,15 @@ script.on_nth_tick(60, function(event)
 		end
 	end
 	for id, entity in pairs(global.repairing) do
-
 		if not entity or not entity.valid then
 			global.repairing[id] = nil
 		else
 			local force_name = entity.force.name
-			if not global.forces[force_name] or global.forces[force_name].bonuses.repair == 0 or entity.get_health_ratio() == 1 then
+			local force_data = global.forces[force_name]
+			if not force_data or force_data.bonuses.repair == 0 or entity.get_health_ratio() == 1 then
 				global.repairing[id] = nil
 			else
-				entity.health = entity.health + entity.prototype.max_health/100*global.forces[force_name].bonuses.repair
+				entity.health = entity.health + entity.prototype.max_health/100*force_data.bonuses.repair
 			end
 		end
 	end
@@ -571,9 +597,9 @@ function dbg(str)
 end
 
 function distance(pos1,pos2)
-	local x=(pos1.x-pos2.x)^2
-	local y=(pos1.y-pos2.y)^2
-	return(x+y)^0.5
+	local xdiff = pos1.x - pos2.x
+	local ydiff = pos1.y - pos2.y
+	return (xdiff * xdiff + ydiff * ydiff)^0.5
 end
 
 function print(str)
@@ -581,8 +607,9 @@ game.players[1].print(str)
 end
 
 script.on_event(defines.events.on_gui_opened, function(event)
-	if not event.entity  then return end
-	if event.entity.name =="rpgitems-market" then
+	local entity = event.entity
+	if not (entity and entity.valid) then return end
+	if entity.name =="rpgitems-market" then
 		local player = game.get_player(event.player_index)
 		open_market(player)
 		unlock_items(player)
@@ -633,6 +660,7 @@ end, {
 
 script.on_event(defines.events.on_player_died, function(event)
 	local player = game.get_player(event.player_index)
+	if not (player and player.valid) then return end
 	if player.gui.center.rpgitems_market then player.gui.center.rpgitems_market.destroy() end
 end)
 

@@ -23,6 +23,7 @@ script.on_event(defines.events.on_gui_click, function(event)
 	if not (element and element.valid) then return end
 
 	local player = game.get_player(element.player_index)
+	if not (player and player.valid) then return end
 	local force = player.force
 	local force_data = global.forces[player.force.name]
 	local gui_name = element.name
@@ -829,7 +830,7 @@ function remove_modifier(force, modifier, mult)
 		end
 		global.forces[force.name].giveitem[modifier.item] = new_mod
 	elseif modifier.type == "spellpack" then
-		if remote.interfaces["spell-pack"] and tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
+		if remote.interfaces["spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 			--local players =remote.call("spell-pack","get","players")
 			--for _, player in pairs(global.forces[force.name].players) do
 			--	local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
@@ -901,7 +902,7 @@ function add_modifier(force, modifier, mult)
 	elseif modifier.type == "giveitem" then
 		global.forces[force.name].giveitem[modifier.item] = (global.forces[force.name].giveitem[modifier.item] or 0) + modifier.per_second*mult
 	elseif modifier.type == "spellpack" then
-		if remote.interfaces["spell-pack"] and tonumber(game.active_mods["spell-pack"]:sub(-2)) >= 18 then
+		if remote.interfaces["spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 			--local players =remote.call("spell-pack","get","players")
 			--for _, player in pairs(global.forces[force.name].players) do
 			--	local new_mod = players[player.index][modifier.modifier]+ modifier.value*mult
@@ -1184,9 +1185,10 @@ function can_insert_item(force, item)
 end
 
 function get_sell_price(itemname)
-	local price = global.items[itemname].price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
-	if global.items[itemname].parts then
-		for _, part in pairs(global.items[itemname].parts) do
+	local item_data = global.items[itemname]
+	local price = item_data.price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
+	if item_data.parts then
+		for _, part in pairs(item_data.parts) do
 			price = price + get_sell_price(part.name) * part.count
 		end
 	end
@@ -1222,6 +1224,7 @@ function open_market(player, selected_item)
 	local table = gui.add{type="table", name = "market_table", column_count = 8}
 	--table.style.minimal_height = 300
 	local excluded_items = {}
+	local force_data = global.forces[player.force.name]
 	local technologies = player.force.technologies
 	for _, data in pairs(global.items) do
 		if data.parts and (not data.tech_requirement or technologies[data.tech_requirement].researched) then
@@ -1243,14 +1246,14 @@ function open_market(player, selected_item)
 					and (
 						not item.andversion
 						or tonumber(game.active_mods[item.conflicts]:sub(-2)) >= item.andversion
-							)
-						)
 					)
-			and (not data.tech_requirement or player.force.technologies[data.tech_requirement].researched)
+				)
+			)
+			and (not data.tech_requirement or technologies[data.tech_requirement].researched)
 		then
 			local button
 			if name == "rpgitems_bonus_slot" then
-				button = table.add{type="sprite-button", name = name, number=50000+global.forces[player.force.name].bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value), sprite = name, style = "quick_bar_slot_button"}
+				button = table.add{type="sprite-button", name = name, number=50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value), sprite = name, style = "quick_bar_slot_button"}
 			else
 				local style = "quick_bar_slot_button"
 				if buy_item(player.force,name,true) < get_sell_price(name) then
