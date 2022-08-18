@@ -39,17 +39,26 @@ remote.add_interface("rpg-items", {
 
 local function refresh_forces()
 	for _, force in pairs(game.forces) do
+		local force_name = force.name
 		if force.players then
-			if not global.forces[force.name] then
-				global.forces[force.name] = {players = {}, color = force, research = {}, money = 16000, bonuses = {income = 1, crit = 0, critdamage = 0, armor = 0, thorns = 0, regen = 1.5, chardamage = 0, chardamage_mult = 1, repair = 0, pctregen = 0, lifesteal = 0, pctlifesteal = 0, energy = 0, revive = 0, stun = 0, momentum = 0,immolation = 0}, bonus_talents = 0, giveitem={}, modifiers = {},talent_modifiers = {}, items = {}, item_cooldowns = {}, bonus_slots = 0}
+			if not global.forces[force_name] then
+				global.forces[force_name] = {
+					players = {}, color = force, research = {}, money = 16000,
+					bonuses = {
+						income = 1, crit = 0, critdamage = 0, armor = 0, thorns = 0, regen = 1.5,
+						chardamage = 0, chardamage_mult = 1, repair = 0, pctregen = 0, lifesteal = 0,
+						pctlifesteal = 0, energy = 0, revive = 0, stun = 0, momentum = 0, immolation = 0
+					},
+					bonus_talents = 0, giveitem={}, modifiers = {},talent_modifiers = {}, items = {}, item_cooldowns = {}, bonus_slots = 0
+				}
 			end
 		end
 
-		if global.forces[force.name] then
-			global.forces[force.name].players = force.players
-			for _, player in pairs(global.forces[force.name].players) do
+		if global.forces[force_name] then
+			global.forces[force_name].players = force.players
+			for _, player in pairs(force.players) do
 				create_equipment_gui(player)
-				local talents_data = global.talents[player.force.name]
+				local talents_data = global.talents[force_name]
 				if not talents_data or not talents_data.ready then
 					talents_gui(player)
 				end
@@ -254,7 +263,7 @@ script.on_configuration_changed(function()
 		end
 		game.print("Added spellpack talents and items :)")
 	end
-	if (game.active_mods["m-spell-pack"] or tonumber(game.active_mods["m-spell-pack"]:sub(-2)) < 18) and global.use_spellpack then
+	if (game.active_mods["m-spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) < 18) and global.use_spellpack then
 		global.use_spellpack = false
 		global.all_talents.b["t23"] = nil
 		global.all_talents.b["t24"] = nil

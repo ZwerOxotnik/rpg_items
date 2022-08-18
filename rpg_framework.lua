@@ -268,49 +268,53 @@ function apply_talents(force)
 end
 function talents_gui_click(event)
 	if not event.element or not event.element.valid then return end
-	if event.element.parent and event.element.parent.name:sub(1,23) == "rpgitems_talent_choice_" then
+	local element_name = event.element.name
+	local parent = event.element.parent
+	if parent and parent.name:sub(1,23) == "rpgitems_talent_choice_" then
 		local player = game.get_player(event.player_index)
-		local BONUS_TALENTS = global.forces[player.force.name].bonus_talents
+		local force_name = player.force.name
+		local BONUS_TALENTS = global.forces[force_name].bonus_talents
+		local force_talents = global.talents[force_name]
 		if event.button == defines.mouse_button_type.left then
 			if event.shift then
-				for i=1, 5 do
+				for _=1, 5 do
 					local verified_talents = verify_talents(player.force)
-					if verified_talents[event.element.parent.name:sub(24,24)].spent>= 8+BONUS_TALENTS and verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS or verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
+					if verified_talents[parent.name:sub(24,24)].spent >= 8+BONUS_TALENTS and verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS or verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
 					else
-						global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] = (global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] or 0) + 1
+						force_talents[parent.name:sub(24,24)][element_name] = (force_talents[parent.name:sub(24,24)][element_name] or 0) + 1
 					end
 
 				end
 			else
 				local verified_talents = verify_talents(player.force)
-				if verified_talents[event.element.parent.name:sub(24,24)].spent>= 8+BONUS_TALENTS and verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS or verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
+				if verified_talents[parent.name:sub(24,24)].spent >= 8+BONUS_TALENTS and verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS or verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
 				else
-					global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] = (global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] or 0) + 1
+					force_talents[parent.name:sub(24,24)][element_name] = (force_talents[parent.name:sub(24,24)][element_name] or 0) + 1
 				end
 			end
 		elseif event.button == defines.mouse_button_type.right then
 			if event.shift then
-				global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] = math.max(0,(global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] or 0) - 5)
+				force_talents[parent.name:sub(24,24)][element_name] = math.max(0, (force_talents[parent.name:sub(24,24)][element_name] or 0) - 5)
 			else
-				global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] = math.max(0,(global.talents[player.force.name][event.element.parent.name:sub(24,24)][event.element.name] or 0) - 1)
+				force_talents[parent.name:sub(24,24)][element_name] = math.max(0, (force_talents[parent.name:sub(24,24)][element_name] or 0) - 1)
 			end
 		end
-		--verify_talents(game.forces[player.force.name])
-		for _, p in pairs(global.forces[player.force.name].players) do
+		--verify_talents(game.forces[force_name])
+		for _, p in pairs(global.forces[force_name].players) do
 			talents_gui(p)
 		end
-	elseif event.element.name == "rpgitems_talents_close" then
+	elseif element_name == "rpgitems_talents_close" then
 		local player = game.get_player(event.player_index)
 		for _, p in pairs(global.forces[player.force.name].players) do
 			p.gui.center.talents_gui.destroy()
 		end
 		global.talents[player.force.name].ready = true
 		apply_talents(player.force)
-	--elseif event.element.name == "rpgitems_talents_copypaste_button" then
+	--elseif element_name == "rpgitems_talents_copypaste_button" then
 	--	local player = game.get_player(event.player_index)
-	--	local unbased,unbased_ret = pcall(base64.decode,event.element.parent.rpgitems_talents_copypaste.text)
-	--	--local unbased = base64.decode(event.element.parent.rpgitems_talents_copypaste.text)
-	--	--local unbased =event.element.parent.rpgitems_talents_copypaste.text
+	--	local unbased,unbased_ret = pcall(base64.decode,parent.rpgitems_talents_copypaste.text)
+	--	--local unbased = base64.decode(parent.rpgitems_talents_copypaste.text)
+	--	--local unbased =parent.rpgitems_talents_copypaste.text
 	--	if unbased then
 	--		local decompressed,decompressed_ret = pcall(LibDeflate_DecompressZlib,unbased_ret)
 	--		--local decompressed = LibDeflate:DecompressZlib(unbased)
@@ -1253,7 +1257,11 @@ function open_market(player, selected_item)
 		then
 			local button
 			if name == "rpgitems_bonus_slot" then
-				button = table.add{type="sprite-button", name = name, number=50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value), sprite = name, style = "quick_bar_slot_button"}
+				button = table.add{
+					type="sprite-button", name = name,
+					number=50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value),
+					sprite = name, style = "quick_bar_slot_button"
+				}
 			else
 				local style = "quick_bar_slot_button"
 				if buy_item(player.force,name,true) < get_sell_price(name) then
