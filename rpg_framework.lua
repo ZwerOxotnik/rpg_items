@@ -1382,7 +1382,7 @@ function create_equipment_gui(player)
 		local item = global.items[data.item]
 		local item_gui = equipment_table["item_"..i]
 		item_gui.sprite = data.item
-		item_gui.tooltip = {"", data.name, "\n\n", data.description}
+		item_gui.tooltip = {"", item.name, "\n\n", item.description}
 		if item.stack_size then
 			item_gui.number = data.count
 		else
