@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.21.3
+Date: 2022-11-17
+  Bugfixes:
+    - Fixed missing tooltips in some cases
+  Locale:
+    - Added Chinese Traditional translation (thanks to @hunterkm (ハンターKM) on crowdin)
+    - Translations: https://crowdin.com/project/factorio-mods-localization (thank you for contributions, I really appreciate it)
+---------------------------------------------------------------------------------------------------
 Version: 0.21.2
 Date: 2022-08-21
   Locale:
