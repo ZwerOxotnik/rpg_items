@@ -1016,68 +1016,74 @@ function get_stack(modifier, stack_cache)
 end
 
 function update_items(force)
-	local force_data = global.forces[force.name]
+	local mod_forces_data = global.forces
+	local force_data = mod_forces_data[force.name]
 	local stacks = remove_modifiers(force, force_data.modifiers)
 	force_data.modifiers = {}
 	local items = global.items
 	for _, data in pairs(force_data.items) do
 		local item = items[data.item]
-		for i=1, (data.count or 1) do
+		for _=1, (data.count or 1) do
 			stacks = add_modifiers(force, item.effects, stacks)
 		end
 	end
 
+	-- TODO: recheck! Is this wrong to check all of them in each current case? I guess so.
 	for _, player in pairs(force_data.players) do
-		local _force_data = global.forces[player.force.name]
-		local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
-		if #equipment_table.children ~= 4+_force_data.bonus_slots then
-			create_equipment_gui(player)
-		end
-		local i = 1
-		for _, data in pairs(force_data.items) do
-			local item = items[data.item]
-			local gui = equipment_table["item_"..i]
-			gui.sprite = data.item
-			local item_data = global.items[data.item]
-			gui.tooltip = {"", item_data.name, "\n\n", item_data.description}
-			if item.stack_size then
-				gui.number = data.count
-			else
-				gui.number = nil
+		local rpgitems_item_gui = player.gui.left.rpgitems_item_gui
+		if rpgitems_item_gui and rpgitems_item_gui.valid then
+			local _force_data = mod_forces_data[player.force.name]
+			local equipment_table = rpgitems_item_gui.equipment_table
+			if #equipment_table.children ~= 4+_force_data.bonus_slots then
+				create_equipment_gui(player)
 			end
-			gui.clear()
-			local cooldown = force_data.item_cooldowns[data.item]
-			if cooldown then
-				local bar = gui.add{type = "progressbar", name = "cd", value = (cooldown / item.cooldown)}
-				local style = bar.style
-				style.color = yellow_color
-				style.width = 24
-				style.top_padding = 0
-				style.bottom_padding = 0
-				style.left_padding = 0
-				style.right_padding = 0
-				style.top_margin = 0
-				style.bottom_margin = 0
-				style.left_margin = -1
-				style.right_margin = 0
+			local i = 1
+			for _, data in pairs(force_data.items) do
+				local item_name = data.item
+				local item = items[item_name]
+				local gui = equipment_table["item_"..i]
+				gui.sprite = item_name
+				gui.tooltip = {"", item.name, "\n\n", item.description}
+				if item.stack_size then
+					gui.number = data.count
+				else
+					gui.number = nil
+				end
+				gui.clear()
+				local cooldown = force_data.item_cooldowns[item_name]
+				if cooldown then
+					local bar = gui.add{type = "progressbar", name = "cd", value = (cooldown / item.cooldown)}
+					local style = bar.style
+					style.color = yellow_color
+					style.width = 24
+					style.top_padding = 0
+					style.bottom_padding = 0
+					style.left_padding = 0
+					style.right_padding = 0
+					style.top_margin = 0
+					style.bottom_margin = 0
+					style.left_margin = -1
+					style.right_margin = 0
+				end
+				i=i+1
 			end
-			i=i+1
-		end
 
-		for j=i, 4+_force_data.bonus_slots do
-			local gui = equipment_table["item_"..j]
-			gui.sprite = "transparent32"
-			gui.tooltip = ""
-			gui.number = nil
-			gui.clear()
+			for j=i, 4 + _force_data.bonus_slots do
+				local gui = equipment_table["item_"..j]
+				gui.sprite = "transparent32"
+				gui.tooltip = ""
+				gui.number = nil
+				gui.clear()
+			end
 		end
 	end
 end
 
 function lock_items(player)
+	local mod_items_data = global.items
 	for _, elem in pairs(player.gui.left.rpgitems_item_gui.equipment_table.children) do
 		--print("'"..elem.sprite.."'")
-		if elem.sprite ~="" and elem.sprite ~="transparent32" and global.items[elem.sprite].func then
+		if elem.sprite ~="" and elem.sprite ~="transparent32" and mod_items_data[elem.sprite].func then
 			elem.mouse_button_filter = {"left"}
 		else
 			elem.mouse_button_filter = {"button-9"}

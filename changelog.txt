@@ -1,10 +1,18 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.21.5
+Date: 2022-11-17
+  Changes:
+    - Refactored slightly
+    - Improved performance for multiplayer slightly
+  Bugfixes:
+    - Fixed some other crashes when the left top mod interface was deleted by other mods (it should work with other mods better)
+---------------------------------------------------------------------------------------------------
 Version: 0.21.4
 Date: 2022-11-17
   Changes:
     - Refactores slightly
   Bugfixes:
-    - Fixed crashes when left top gui was deleted by other mods (it should work with other mods better)
+    - Fixed crashes when the left top mod interface was deleted by other mods (it should work with other mods better)
 ---------------------------------------------------------------------------------------------------
 Version: 0.21.3
 Date: 2022-11-17

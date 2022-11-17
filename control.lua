@@ -468,15 +468,16 @@ end
 local _entity_search_filter = {type = {"unit", "character"}, position = {}, radius = 6}
 script.on_nth_tick(25, function()
 	local immolations = global.immolation
+	local mod_forces_data = global.forces
 	for _, player in pairs(game.connected_players) do
 		if immolations[player.index] then
-			local immolation_bonus = global.forces[player.force.name].bonuses.immolation
+			local player_force = player.force
+			local player_force_name = player_force.name
+			local immolation_bonus = mod_forces_data[player_force_name].bonuses.immolation -- TODO: Refactor?
 			local character = player.character
 			if immolation_bonus > 0 and character and character.valid then
 				_entity_search_filter.position = player.position
 				local enemies = player.surface.find_entities_filtered(_entity_search_filter)
-				local player_force = player.force
-				local player_force_name = player_force.name
 				local damage_mult = player_force.get_ammo_damage_modifier("flamethrower") + 1
 				for i=1, #enemies do
 					local enemy = enemies[i]
@@ -512,7 +513,8 @@ script.on_nth_tick(60, function()
 			update = true
 		end
 
-		local giveitem_cache= global.giveitem_cache
+		-- TODO: Refactor
+		local giveitem_cache = global.giveitem_cache
 		for item, persec in pairs(force_data.giveitem) do
 			for _, player in pairs(force_data.players) do
 				local player_index = player.index
@@ -529,27 +531,29 @@ script.on_nth_tick(60, function()
 		local force = game.forces[force_index]
 		local money_caption = floor(force_data.money).."[img=rpgitems-coin]"
 		for _, player in pairs(force_data.players) do
-			local rpgitems_item_gui = player.gui.left.rpgitems_item_gui
-			if rpgitems_item_gui and rpgitems_item_gui.valid then
-				rpgitems_item_gui.money.caption = money_caption
-				--cooldowns
-				if update then
-					update_items(force)
-				end
-				--giveitem
-				local cached_given_items = global.giveitem_cache[player.index]
-				local character = player.character
-				local inventory = player.get_main_inventory()
-				local player_insert = player.insert
-				if inventory and character and character.valid and cached_given_items then
-					local get_item_count = inventory.get_item_count
-					for item, cached in pairs(cached_given_items) do
-						local in_inventory = get_item_count(item)
-						if cached >= 1 and in_inventory < 200 then
-							_stack_data.name = item
-							_stack_data.count = min(200-in_inventory,floor(cached))
-							local inserted = player_insert(_stack_data)
-							cached_given_items[item] = cached_given_items[item] - inserted
+			if player.valid and player.connected then
+				local rpgitems_item_gui = player.gui.left.rpgitems_item_gui
+				if rpgitems_item_gui and rpgitems_item_gui.valid then
+					rpgitems_item_gui.money.caption = money_caption
+					--cooldowns
+					if update then
+						update_items(force)
+					end
+					--giveitem
+					local cached_given_items = global.giveitem_cache[player.index]
+					local character = player.character
+					local inventory = player.get_main_inventory()
+					local player_insert = player.insert
+					if inventory and character and character.valid and cached_given_items then
+						local get_item_count = inventory.get_item_count
+						for item, cached in pairs(cached_given_items) do
+							local in_inventory = get_item_count(item)
+							if cached >= 1 and in_inventory < 200 then
+								_stack_data.name = item
+								_stack_data.count = min(200-in_inventory,floor(cached))
+								local inserted = player_insert(_stack_data)
+								cached_given_items[item] = cached_given_items[item] - inserted
+							end
 						end
 					end
 				end
