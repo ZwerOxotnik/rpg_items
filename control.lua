@@ -502,57 +502,74 @@ script.on_nth_tick(60, function()
 		--local player = game.players[id]
 		force_data.money = force_data.money + force_data.bonuses.income
 		local update = false
-		for field, cd in pairs(force_data.item_cooldowns) do
-			cd = cd -1
+		local item_cooldowns= force_data.item_cooldowns
+		for field, cd in pairs(item_cooldowns) do
+			cd = cd - 1
 			if cd <= 0 then
 				cd = nil
 			end
-			force_data.item_cooldowns[field] = cd
+			item_cooldowns[field] = cd
 			update = true
 		end
+
+		local giveitem_cache= global.giveitem_cache
 		for item, persec in pairs(force_data.giveitem) do
 			for _, player in pairs(force_data.players) do
-				if not global.giveitem_cache[player.index] then
-					global.giveitem_cache[player.index] = {}
+				local player_index = player.index
+				local cashed_item_player_data = giveitem_cache[player_index]
+				if cashed_item_player_data == nil then
+					local data = {}
+					giveitem_cache[player_index] = data
+					cashed_item_player_data = data
 				end
-				global.giveitem_cache[player.index][item] = (global.giveitem_cache[player.index][item] or 0) + persec
+				cashed_item_player_data[item] = (cashed_item_player_data[item] or 0) + persec
 			end
 		end
+
 		local force = game.forces[force_index]
+		local money_caption = floor(force_data.money).."[img=rpgitems-coin]"
 		for _, player in pairs(force_data.players) do
-			player.gui.left.rpgitems_item_gui.money.caption = floor(force_data.money).."[img=rpgitems-coin]"
-			--cooldowns
-			if update then
-				update_items(force)
-			end
-			--giveitem
-			local cached_given_items = global.giveitem_cache[player.index]
-			local character = player.character
-			local inventory = player.get_main_inventory()
-			if inventory and character and character.valid and cached_given_items then
-				for item, cached in pairs(cached_given_items) do
-					local in_inventory = inventory.get_item_count(item)
-					if cached >= 1 and in_inventory < 200 then
-						_stack_data.name = item
-						_stack_data.count = min(200-in_inventory,floor(cached))
-						local inserted = player.insert(_stack_data)
-						cached_given_items[item] = cached_given_items[item] - inserted
+			local rpgitems_item_gui = player.gui.left.rpgitems_item_gui
+			if rpgitems_item_gui and rpgitems_item_gui.valid then
+				rpgitems_item_gui.money.caption = money_caption
+				--cooldowns
+				if update then
+					update_items(force)
+				end
+				--giveitem
+				local cached_given_items = global.giveitem_cache[player.index]
+				local character = player.character
+				local inventory = player.get_main_inventory()
+				local player_insert = player.insert
+				if inventory and character and character.valid and cached_given_items then
+					local get_item_count = inventory.get_item_count
+					for item, cached in pairs(cached_given_items) do
+						local in_inventory = get_item_count(item)
+						if cached >= 1 and in_inventory < 200 then
+							_stack_data.name = item
+							_stack_data.count = min(200-in_inventory,floor(cached))
+							local inserted = player_insert(_stack_data)
+							cached_given_items[item] = cached_given_items[item] - inserted
+						end
 					end
 				end
 			end
-
 		end
 	end
-	for id, entity in pairs(global.repairing) do
+
+	local forces = global.forces
+	local repairing_data = global.repairing
+	for id, entity in pairs(repairing_data) do
 		if not entity or not entity.valid then
-			global.repairing[id] = nil
+			repairing_data[id] = nil
 		else
 			local force_name = entity.force.name
-			local force_data = global.forces[force_name]
-			if not force_data or force_data.bonuses.repair == 0 or entity.get_health_ratio() == 1 then
-				global.repairing[id] = nil
+			local force_data = forces[force_name]
+			local repair_bonus = force_data.bonuses.repair
+			if not force_data or repair_bonus == 0 or entity.get_health_ratio() == 1 then
+				repairing_data[id] = nil
 			else
-				entity.health = entity.health + entity.prototype.max_health/100*force_data.bonuses.repair
+				entity.health = entity.health + entity.prototype.max_health / 100 * repair_bonus
 			end
 		end
 	end
@@ -560,12 +577,13 @@ end)
 
 script.on_nth_tick(150, function(event)
 	local tick = game.tick
-	for character, _tick in pairs(global.indestructible_characters) do
+	local indestructible_characters = global.indestructible_characters
+	for character, _tick in pairs(indestructible_characters) do
 		if tick >= _tick then
 			if character and character.valid then
 				character.destructible = true
 			end
-			global.indestructible_characters[character] = nil
+			indestructible_characters[character] = nil
 		end
 	end
 end)
