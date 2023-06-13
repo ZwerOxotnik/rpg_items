@@ -38,6 +38,7 @@ remote.add_interface("rpg-items", {
 
 
 local function refresh_forces()
+	-- Init force data
 	for _, force in pairs(game.forces) do
 		local force_name = force.name
 		if force.players then
@@ -63,6 +64,14 @@ local function refresh_forces()
 					talents_gui(player)
 				end
 			end
+		end
+	end
+
+	-- Remove invalid force data
+	for force_name in pairs(global.forces) do
+		local force = game.forces[force_name]
+		if not (force and force.valid) then
+			global.forces[force_name] = nil
 		end
 	end
 end
@@ -299,6 +308,8 @@ script.on_configuration_changed(function()
 			game.print("Please update Spell-Pack")
 		end
 	end
+
+	refresh_forces()
 end)
 
 --function on_player_created(player)
@@ -306,9 +317,7 @@ end)
 --	refresh_forces()
 --end
 
-script.on_event({defines.events.on_player_created,defines.events.on_forces_merged,defines.events.on_player_changed_force} , function(event)
-	refresh_forces()
-end)
+script.on_event({defines.events.on_player_created,defines.events.on_forces_merged,defines.events.on_player_changed_force}, refresh_forces)
 --script.on_event(defines.events.on_console_chat, function(event)
 --	if event.message == "gold" then
 --		global.forces[game.get_player(event.player_index).force.name].money = global.forces[game.get_player(event.player_index).force.name].money+198000
