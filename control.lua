@@ -749,7 +749,7 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 		local force_bonuses = force_data.bonuses
 		if entity.type == "character" then
 			local damage = force_bonuses.thorns
-			if cause and damage > 0 then
+			if cause and damage > 0 and cause.valid and cause.health then
 				cause.damage(damage, force, event.damage_type.name)
 			end
 			-- local player = entity.player
@@ -783,6 +783,7 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 					entity.surface.create_entity{ name="rpgitems-stun-sticker", position=entity.position, target=entity }
 				end
 			end
+
 			if entity.has_flag("breaths-air") and random() < force_bonuses.crit then
 				local pos =  entity.position
 				local surface = entity.surface
@@ -792,6 +793,7 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 				local dmg = extradamage + event.final_damage_amount
 				surface.create_entity{name="flying-text", position = pos, color = RED_COLOR, text = floor(dmg)}
 			end
+
 			if cause.type == "character" then
 				if force_bonuses.pctlifesteal > 0 then
 					cause.health = cause.health + (event.final_damage_amount + extradamage)/100*force_bonuses.pctlifesteal

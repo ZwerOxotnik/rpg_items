@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.21.8
+Date: 2023-12-06
+  Bugfixes:
+    - Fixed crash on entity damaged event without health
+    - Improved stability of on_entity_damaged event
+---------------------------------------------------------------------------------------------------
 Version: 0.21.7
 Date: 2023-06-13
   Bugfixes:
