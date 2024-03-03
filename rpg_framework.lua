@@ -1015,7 +1015,51 @@ function get_stack(modifier, stack_cache)
 	return biggest_mult, stack_cache
 end
 
-function update_items(force)
+function create_item_sprites(player)
+	local i = 1
+	local force_data = global.forces[player.force.name]
+	local items = global.items
+	local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
+	for _, data in pairs(force_data.items) do
+		local item_name = data.item
+		local item = items[item_name]
+		local gui = equipment_table["item_"..i]
+		gui.sprite = item_name
+		gui.tooltip = {"", item.name, "\n\n", item.description}
+		if item.stack_size then
+			gui.number = data.count
+		else
+			gui.number = nil
+		end
+		gui.clear()
+		local cooldown = force_data.item_cooldowns[item_name]
+		if cooldown then
+			local bar = gui.add{type = "progressbar", name = "cd", value = (cooldown / item.cooldown)}
+			local style = bar.style
+			style.color = yellow_color
+			style.width = 24
+			style.top_padding = 0
+			style.bottom_padding = 0
+			style.left_padding = 0
+			style.right_padding = 0
+			style.top_margin = 0
+			style.bottom_margin = 0
+			style.left_margin = -1
+			style.right_margin = 0
+		end
+		i=i+1
+	end
+
+	for j=i, 4 + force_data.bonus_slots do
+		local gui = equipment_table["item_"..j]
+		gui.sprite = "transparent32"
+		gui.tooltip = ""
+		gui.number = nil
+		gui.clear()
+	end
+end
+
+function update_items(force, update)
 	local mod_forces_data = global.forces
 	local force_data = mod_forces_data[force.name]
 	local stacks = remove_modifiers(force, force_data.modifiers)
@@ -1037,44 +1081,7 @@ function update_items(force)
 			if #equipment_table.children ~= 4+_force_data.bonus_slots then
 				create_equipment_gui(player)
 			end
-			local i = 1
-			for _, data in pairs(force_data.items) do
-				local item_name = data.item
-				local item = items[item_name]
-				local gui = equipment_table["item_"..i]
-				gui.sprite = item_name
-				gui.tooltip = {"", item.name, "\n\n", item.description}
-				if item.stack_size then
-					gui.number = data.count
-				else
-					gui.number = nil
-				end
-				gui.clear()
-				local cooldown = force_data.item_cooldowns[item_name]
-				if cooldown then
-					local bar = gui.add{type = "progressbar", name = "cd", value = (cooldown / item.cooldown)}
-					local style = bar.style
-					style.color = yellow_color
-					style.width = 24
-					style.top_padding = 0
-					style.bottom_padding = 0
-					style.left_padding = 0
-					style.right_padding = 0
-					style.top_margin = 0
-					style.bottom_margin = 0
-					style.left_margin = -1
-					style.right_margin = 0
-				end
-				i=i+1
-			end
-
-			for j=i, 4 + _force_data.bonus_slots do
-				local gui = equipment_table["item_"..j]
-				gui.sprite = "transparent32"
-				gui.tooltip = ""
-				gui.number = nil
-				gui.clear()
-			end
+			create_item_sprites(player)
 		end
 	end
 end
@@ -1382,44 +1389,8 @@ function create_equipment_gui(player)
 		button.style.natural_width = 32
 	end
 
-	local i=1
-	local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
-	for _, data in pairs(force_data.items) do
-		local item = global.items[data.item]
-		local item_gui = equipment_table["item_"..i]
-		item_gui.sprite = data.item
-		item_gui.tooltip = {"", item.name, "\n\n", item.description}
-		if item.stack_size then
-			item_gui.number = data.count
-		else
-			item_gui.number = nil
-		end
-		item_gui.clear()
+	create_item_sprites(player)
 
-		local cooldown = force_data.item_cooldowns[data.item]
-		if cooldown then
-			local bar = item_gui.add{type = "progressbar", name = "cd", value = (cooldown/item.cooldown)}
-			local style = bar.style
-			style.color = yellow_color
-			style.width = 24
-			style.top_padding = 0
-			style.bottom_padding = 0
-			style.left_padding = 0
-			style.right_padding = 0
-			style.top_margin = 0
-			style.bottom_margin = 0
-			style.left_margin = -1
-			style.right_margin = 0
-		end
-		i=i+1
-	end
-	for j=i, 4+force_data.bonus_slots do
-		local item_gui = equipment_table["item_"..j]
-		item_gui.sprite = "transparent32"
-		item_gui.tooltip = ""
-		item_gui.number = nil
-		item_gui.clear()
-	end
 	gui.add{type = "label", name ="money", caption = math.floor(force_data.money).."[img=rpgitems-coin]"}
 	if player.gui.center.rpgitems_market then
 		unlock_items(player)

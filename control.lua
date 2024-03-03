@@ -1,3 +1,5 @@
+if script.active_mods["gvv"] then require("__gvv__.gvv")() end
+
 require("ITEMS")
 require("rpg_framework")
 
@@ -546,7 +548,7 @@ script.on_nth_tick(60, function()
 					rpgitems_item_gui.money.caption = money_caption
 					--cooldowns
 					if update then
-						update_items(force)
+						create_item_sprites(player)
 					end
 					--giveitem
 					local cached_given_items = global.giveitem_cache[player.index]
