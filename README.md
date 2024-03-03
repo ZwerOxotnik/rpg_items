@@ -26,6 +26,7 @@ Special Thanks to
 - KiritoTRw
 - James Austin
 - Utah Valley Fence Company
+- [@OmgDani (Danielle)](https://github.com/OmgDani)
 
 License
 -------
