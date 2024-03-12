@@ -767,44 +767,43 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 		end
 	end
 
-	if cause and cause.valid then
-		local force_data = global.forces[cause.force.name]
-		if force_data == nil then return end
+	if not (cause and cause.valid) then return end
+	if not entity.valid then return end
+	local force_data = global.forces[cause.force.name]
+	if force_data == nil then return end
 
-		local force_bonuses = force_data.bonuses
-		if entity.valid then
-			local extradamage = 0
-			--if event.damage_type.name == "chardamage" then
-			--	local mult = global.forces[force].bonuses.chardamage_mult+cause.force.get_turret_attack_modifier("character")
-			--	extradamage = global.forces[force].bonuses.chardamage*mult + (mult-1)*8
-			--	extradamage = entity.damage(extradamage, cause.force, "physical")
-			--end
-			if random() < force_bonuses.stun * (cause.type == "character" and 6 or 2) then
-				--game.print(global.forces[force].bonuses.stun * (cause.type == "character" and 2 or 1))
-				if entity.type == "unit" or entity.type == "character" then
-					entity.surface.create_entity{ name="rpgitems-stun-sticker", position=entity.position, target=entity }
-				end
-			end
 
-			if entity.has_flag("breaths-air") and random() < force_bonuses.crit then
-				local pos =  entity.position
-				local surface = entity.surface
-				--local player_mult = 1
-				--if event.
-				extradamage = entity.damage((event.original_damage_amount+extradamage)*(1+force_bonuses.critdamage), cause.force, event.damage_type.name)
-				local dmg = extradamage + event.final_damage_amount
-				surface.create_entity{name="flying-text", position = pos, color = RED_COLOR, text = floor(dmg)}
-			end
-
-			if cause.type == "character" then
-				if force_bonuses.pctlifesteal > 0 then
-					cause.health = cause.health + (event.final_damage_amount + extradamage)/100*force_bonuses.pctlifesteal
-				end
-				if force_bonuses.lifesteal > 0 then
-					cause.health = cause.health + force_bonuses.lifesteal
-				end
-			end
+	local force_bonuses = force_data.bonuses
+	local extradamage = 0
+	--if event.damage_type.name == "chardamage" then
+	--	local mult = global.forces[force].bonuses.chardamage_mult+cause.force.get_turret_attack_modifier("character")
+	--	extradamage = global.forces[force].bonuses.chardamage*mult + (mult-1)*8
+	--	extradamage = entity.damage(extradamage, cause.force, "physical")
+	--end
+	if random() < force_bonuses.stun * (cause.type == "character" and 6 or 2) then
+		--game.print(global.forces[force].bonuses.stun * (cause.type == "character" and 2 or 1))
+		if entity.type == "unit" or entity.type == "character" then
+			entity.surface.create_entity{ name="rpgitems-stun-sticker", position=entity.position, target=entity }
 		end
+	end
+
+	if cause.type == "character" then
+		if force_bonuses.pctlifesteal > 0 then
+			cause.health = cause.health + (event.final_damage_amount + extradamage)/100*force_bonuses.pctlifesteal
+		end
+		if force_bonuses.lifesteal > 0 then
+			cause.health = cause.health + force_bonuses.lifesteal
+		end
+	end
+
+	if entity.has_flag("breaths-air") and random() < force_bonuses.crit then
+		local pos =  entity.position
+		local surface = entity.surface
+		--local player_mult = 1
+		--if event.
+		extradamage = entity.damage((event.original_damage_amount+extradamage)*(1+force_bonuses.critdamage), cause.force, event.damage_type.name)
+		local dmg = extradamage + event.final_damage_amount
+		surface.create_entity{name="flying-text", position = pos, color = RED_COLOR, text = floor(dmg)}
 	end
 end, {
 	{filter = "final-damage-amount", comparison = ">", value = 0, mode = "and"},
