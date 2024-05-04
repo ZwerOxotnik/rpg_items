@@ -337,18 +337,32 @@ function talents_gui_click(event)
 	end
 end
 function verify_talents(force)
-	for rgb, data in pairs(global.talents[force.name]) do
+	if not global.talents[force.name] then
+		log("\"" .. force.name .. "\" force doesn't have talents")
+		set_talents(force)
+	end
+	local talents = global.talents[force.name]
+
+	for rgb, data in pairs(talents) do
+		rgb_talent = talents[rgb]
 		for id, amount in pairs(data) do
 			if amount == 0 then
-				global.talents[force.name][rgb][id] = nil
+				rgb_talent[id] = nil
 			end
 		end
 	end
+
 	local BONUS_TALENTS = global.forces[force.name].bonus_talents
-	local ret = {r={spent = 0, over_spent = 0, width = 8+BONUS_TALENTS},g={spent = 0,over_spent = 0, width = 8+BONUS_TALENTS},b={spent = 0,over_spent = 0, width = 8+BONUS_TALENTS},a=0,total_spent = 0}
+	local ret = {
+		r = {spent = 0, over_spent = 0, width = 8 + BONUS_TALENTS},
+		g = {spent = 0, over_spent = 0, width = 8 + BONUS_TALENTS},
+		b = {spent = 0, over_spent = 0, width = 8 + BONUS_TALENTS},
+		a = 0,
+		total_spent = 0
+	}
 	local total_spent = 0
 	local over_spent = 0
-	for rgb, data in pairs(global.talents[force.name]) do
+	for rgb, data in pairs(talents) do
 		for _, amount in pairs(data) do
 			ret[rgb].spent = (ret[rgb].spent or 0) +amount
 			--total_spent = total_spent + amount
@@ -362,13 +376,13 @@ function verify_talents(force)
 		--end
 		total_spent = total_spent + math.min(8+BONUS_TALENTS, ret[rgb].spent)
 		if ret[rgb].spent > 8+BONUS_TALENTS then
-			local a= math.min(4+BONUS_TALENTS-ret["a"],ret[rgb].spent-8-BONUS_TALENTS)
+			local a = math.min(4+BONUS_TALENTS-ret["a"], ret[rgb].spent-8-BONUS_TALENTS)
 			ret["a"] = ret["a"] +a
 			total_spent = total_spent + a
-			if ret[rgb].spent > 8+BONUS_TALENTS+a then
-				total_spent = total_spent + 2*(ret[rgb].spent - a - 8-BONUS_TALENTS)
-				ret[rgb].over_spent = ret[rgb].spent - a - 8-BONUS_TALENTS
-				over_spent = over_spent + ret[rgb].spent - a - 8-BONUS_TALENTS
+			if ret[rgb].spent > (8 + BONUS_TALENTS + a) then
+				total_spent = total_spent + 2 * (ret[rgb].spent - a - 8 - BONUS_TALENTS)
+				ret[rgb].over_spent = ret[rgb].spent - a - 8 - BONUS_TALENTS
+				over_spent = over_spent + ret[rgb].spent - a - 8 - BONUS_TALENTS
 			end
 			ret[rgb].width = ret[rgb].spent
 		end
@@ -386,18 +400,18 @@ function verify_talents(force)
 	end
 	for rgb, data in pairs(ret) do
 		if rgb ~= "a" and rgb ~="total_spent" then
-			if data.spent < 8+BONUS_TALENTS then
+			if data.spent < 8 + BONUS_TALENTS then
 				--local spare = math.min(math.max(0,8-data.spent), over_spent)
 				--over_spent= over_spent-spare
 				--data.width = data.width - spare
-				data.width = data.width-(8+BONUS_TALENTS-data.spent)/remaining_points_till_8*over_spent
-
+				data.width = data.width - (8 + BONUS_TALENTS-data.spent) / remaining_points_till_8*over_spent
 			end
 		end
 	end
 	ret.total_spent = total_spent
 	return ret
 end
+
 function filter_clicks(button, input)
 	--local filter = {
 	--	["left-and-right"] = false,
@@ -417,11 +431,18 @@ function filter_clicks(button, input)
 	--end
 	button.mouse_button_filter = {input}
 end
+
+function set_talents(force)
+	global.talents[force.name] = global.talents[force.name] or {
+		r={},g={},b={}
+	}
+end
+
 function talents_gui(player)
 	local force = player.force
 	local BONUS_TALENTS = global.forces[force.name].bonus_talents
 	local talents = global.talents
-	if not talents[force.name] then talents[force.name] = {r={},g={},b={}} end
+	if not talents[force.name] then set_talents(force) end
 
 	local verified_talents = verify_talents(force)
 	if player.gui.center.talents_gui then player.gui.center.talents_gui.destroy() end
