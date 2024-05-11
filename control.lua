@@ -644,8 +644,12 @@ function distance(pos1,pos2)
 	return (xdiff * xdiff + ydiff * ydiff)^0.5
 end
 
-function print(str)
-game.players[1].print(str)
+function _print(str)
+	for _, player in pairs(game.connected_players) do
+		if player.valid and player.admin then
+			player.print(str)
+		end
+	end
 end
 
 script.on_event(defines.events.on_gui_opened, function(event)

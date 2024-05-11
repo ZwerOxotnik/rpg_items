@@ -342,6 +342,7 @@ function verify_talents(force)
 		set_talents(force)
 	end
 	local talents = global.talents[force.name]
+	talents.ready = nil
 
 	for rgb, data in pairs(talents) do
 		rgb_talent = talents[rgb]
