@@ -48,7 +48,7 @@ data:extend({
 		flags = {"not-on-map"},
 		render_layer = "decorative",
 		animation = {
-			filename = "__base__/graphics/entity/fire-flame/fire-flame-13.png",
+			filename = "__base__/graphics/entity/fire-flame/fire-flame-04.png", -- TODO: recheck
 			line_length = 8,
 			width = 60,
 			height = 118,

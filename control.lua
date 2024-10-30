@@ -17,21 +17,21 @@ remote.add_interface("rpg-items", {
 		global[field] = value
 	end,
 	add_gold = function(force, value)
-		local force_data = global.forces[force.name]
+		local force_data = storage.forces[force.name]
 		if not force_data then return false end
 		force_data.money = max(0, force_data.money + value)
 		return true
 	end,
 	get_gold = function(force)
-		local force_data = global.forces[force.name]
+		local force_data = storage.forces[force.name]
 		if not force_data then return false end
 		return force_data.money
 	end,
 	set_item = function(item, tbl) -- TODO: change
-		global.items[item] = tbl
-		if global.items[item].func then
-			global.items[item].func = load(global.items[item].func)
-			if not type(global.items[item].func) == "function" then
+		storage.items[item] = tbl
+		if storage.items[item].func then
+			storage.items[item].func = load(storage.items[item].func)
+			if not type(storage.items[item].func) == "function" then
 				error("couldn't load function")
 			end
 		end
@@ -44,8 +44,8 @@ local function refresh_forces()
 	for _, force in pairs(game.forces) do
 		local force_name = force.name
 		if force.players then
-			if not global.forces[force_name] then
-				global.forces[force_name] = {
+			if not storage.forces[force_name] then
+				storage.forces[force_name] = {
 					players = {}, color = force, research = {}, money = 16000,
 					bonuses = {
 						income = 1, crit = 0, critdamage = 0, armor = 0, thorns = 0, regen = 1.5,
@@ -57,11 +57,11 @@ local function refresh_forces()
 			end
 		end
 
-		if global.forces[force_name] then
-			global.forces[force_name].players = force.players
+		if storage.forces[force_name] then
+			storage.forces[force_name].players = force.players
 			for _, player in pairs(force.players) do
 				create_equipment_gui(player)
-				local talents_data = global.talents[force_name]
+				local talents_data = storage.talents[force_name]
 				if not talents_data or not talents_data.ready then
 					talents_gui(player)
 				end
@@ -70,18 +70,18 @@ local function refresh_forces()
 	end
 
 	-- Remove invalid force data
-	for force_name in pairs(global.forces) do
+	for force_name in pairs(storage.forces) do
 		local force = game.forces[force_name]
 		if not (force and force.valid) then
-			global.forces[force_name] = nil
+			storage.forces[force_name] = nil
 		end
 	end
 end
 
 script.on_init( function()
-	global.indestructible_characters = global.indestructible_characters or {}
+	storage.indestructible_characters = storage.indestructible_characters or {}
 	make_items()
-	global.all_talents = {
+	storage.all_talents = {
 	r={
 		["t1"] = {type = "force", modifier = "ammo_damage_modifier", value = 0.02},
 		["t2"] = {type = "force", modifier = "ammo_damage_modifier", value = 0.0002, periodical = 0},
@@ -111,15 +111,15 @@ script.on_init( function()
 		["t26"] = {type = "force", modifier = "character_reach_distance_bonus", value = 1},
 	},
 }
-	if game.active_mods["m-spell-pack"] then
-		global.use_spellpack = true
+	if script.active_mods["m-spell-pack"] then
+		storage.use_spellpack = true
 		--global.all_talents.b["t21"] = {type = "other", modifier = "magic_resistance", value = 2}
 		--global.all_talents.b["t22"] = {type = "other", modifier = "magic_resistance", value = 0.06, periodical = 0}
-		global.all_talents.b["t23"] = {type = "spellpack", modifier = "max_mana", value = 2}
-		global.all_talents.b["t24"] = {type = "spellpack", modifier = "max_mana", value = 0.02, periodical = 0}
-		global.all_talents.b["t25"] = {type = "spellpack", modifier = "mana_reg", value = 0.05}
+		storage.all_talents.b["t23"] = {type = "spellpack", modifier = "max_mana", value = 2}
+		storage.all_talents.b["t24"] = {type = "spellpack", modifier = "max_mana", value = 0.02, periodical = 0}
+		storage.all_talents.b["t25"] = {type = "spellpack", modifier = "mana_reg", value = 0.05}
 	end
-	global.talent_localizations = {
+	storage.talent_localizations = {
 		["t1"]="+2% Damage",
 		["t2"]="+0.2% Damage/hour",
 		["t3"]="+3% Attackspeed",
@@ -149,18 +149,18 @@ script.on_init( function()
 		["t27"]="+0.05% Lifesteal",
 	}
 
-	global.initialized = true
-	global.giveitem_cache = {}
-	global.forces = {}
-	global.repairing = {}
-	global.momentum = {}
-	global.immolation = {}
+	storage.initialized = true
+	storage.giveitem_cache = {}
+	storage.forces = {}
+	storage.repairing = {}
+	storage.momentum = {}
+	storage.immolation = {}
 	--global.units = {}
 	--global.lobbys = {}
 	--global.eq_gui_clicks = {}
-	global.talents = {}
+	storage.talents = {}
 	refresh_forces()
-	-- global.version = 3
+	-- storage.version = 3
 end)
 
 script.on_event(defines.events.on_game_created_from_scenario, function()
@@ -175,39 +175,39 @@ script.on_event(defines.events.on_game_created_from_scenario, function()
 end)
 
 script.on_configuration_changed(function()
-	global.indestructible_characters = global.indestructible_characters or {}
-	-- if not global.version then
-		-- global.version = 1
-		-- for _, data in pairs(global.forces) do
+	storage.indestructible_characters = storage.indestructible_characters or {}
+	-- if not storage.version then
+		-- storage.version = 1
+		-- for _, data in pairs(storage.forces) do
 		-- 	if data.bonuses.revive > 0 then
 		-- 		data.bonuses.revive = 5
 		-- 	end
 		-- end
-		-- if global.items["rpgitems_crusader"].effects[6].modifier == "revive" then
-		-- 	global.items["rpgitems_crusader"].effects[6].value = 5
+		-- if storage.items["rpgitems_crusader"].effects[6].modifier == "revive" then
+		-- 	storage.items["rpgitems_crusader"].effects[6].value = 5
 		-- else
 		-- 	game.print("Error migrating the crusader buff, please report this issue to the author")
 		-- end
-		-- if global.items["rpgitems_crusader_spepa"].effects[7].modifier == "revive" then
-		-- 	global.items["rpgitems_crusader_spepa"].effects[7].value = 5
+		-- if storage.items["rpgitems_crusader_spepa"].effects[7].modifier == "revive" then
+		-- 	storage.items["rpgitems_crusader_spepa"].effects[7].value = 5
 		-- else
 		-- 	game.print("Error migrating the crusader buff, please report this issue to the author")
 		-- end
 	-- end
-	-- if global.version < 2 then
-	-- 	global.version = 2
-	-- 	for _, data in pairs(global.forces) do
+	-- if storage.version < 2 then
+	-- 	storage.version = 2
+	-- 	for _, data in pairs(storage.forces) do
 	-- 		data.bonus_talents = 0
 	-- 	end
-	-- 	if global.items["rpgitems_amnesia_book"] then
-	-- 		global.items["rpgitems_amnesia_book"].description = "Allows you to reset your talents\nGrants +4 talent points (RGBW)\nChanged per hour bonuses will start from 0!"
-	-- 		global.items["rpgitems_amnesia_book"].price = 35000
+	-- 	if storage.items["rpgitems_amnesia_book"] then
+	-- 		storage.items["rpgitems_amnesia_book"].description = "Allows you to reset your talents\nGrants +4 talent points (RGBW)\nChanged per hour bonuses will start from 0!"
+	-- 		storage.items["rpgitems_amnesia_book"].price = 35000
 	-- 	end
 	-- end
-	-- if global.version <3 then
-	-- 	global.version = 3
+	-- if storage.version <3 then
+	-- 	storage.version = 3
 	-- 	if remote.interfaces["spell-pack"] then
-	-- 		for force_name, force_data in pairs(global.forces) do
+	-- 		for force_name, force_data in pairs(storage.forces) do
 	-- 			for mod_id, modifier in pairs(force_data.modifiers) do
 	-- 				if modifier.type == "spellpack" then
 	-- 					local mult = 1
@@ -215,13 +215,13 @@ script.on_configuration_changed(function()
 	-- 						mult = modifier.periodical
 	-- 					end
 	-- 					local players =remote.call("spell-pack","get","players")
-	-- 					for _, player in pairs(global.forces[force_name].players) do
+	-- 					for _, player in pairs(storage.forces[force_name].players) do
 	-- 						local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
 	-- 						players[player.index][modifier.modifier] = new_mod
 	-- 					end
 	-- 					remote.call("spell-pack","set","players",players)
 
-	-- 					if tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
+	-- 					if tonumber(script.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 	-- 					else
 	-- 						force_data.modifiers[mod_id] = nil
@@ -236,13 +236,13 @@ script.on_configuration_changed(function()
 	-- 						mult = modifier.periodical
 	-- 					end
 	-- 					local players =remote.call("spell-pack","get","players")
-	-- 					for _, player in pairs(global.forces[force_name].players) do
+	-- 					for _, player in pairs(storage.forces[force_name].players) do
 	-- 						local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
 	-- 						players[player.index][modifier.modifier] = new_mod
 	-- 					end
 	-- 					remote.call("spell-pack","set","players",players)
 
-	-- 					if tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
+	-- 					if tonumber(script.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 	-- 					else
 	-- 						force_data.modifiers[mod_id] = nil
@@ -252,20 +252,20 @@ script.on_configuration_changed(function()
 	-- 			end
 	-- 		end
 	-- 	end
-		-- for _, data in pairs(global.items) do
+		-- for _, data in pairs(storage.items) do
 		-- 	if data.requires == "m-spell-pack" or data.conflicts == "m-spell-pack" then
 		-- 		data.andversion = 18
 		-- 	end
 		-- end
 	-- end
-	if game.active_mods["m-spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 and not global.use_spellpack then
-		global.use_spellpack = true
-		global.all_talents.b["t23"] = {type = "spellpack", modifier = "max_mana", value = 2}
-		global.all_talents.b["t24"] = {type = "spellpack", modifier = "max_mana", value = 0.02, periodical = 0}
-		global.all_talents.b["t25"] = {type = "spellpack", modifier = "mana_reg", value = 0.05}
-		for i, data in pairs(global.forces) do
+	if script.active_mods["m-spell-pack"] and tonumber(script.active_mods["m-spell-pack"]:sub(-2)) >= 18 and not storage.use_spellpack then
+		storage.use_spellpack = true
+		storage.all_talents.b["t23"] = {type = "spellpack", modifier = "max_mana", value = 2}
+		storage.all_talents.b["t24"] = {type = "spellpack", modifier = "max_mana", value = 0.02, periodical = 0}
+		storage.all_talents.b["t25"] = {type = "spellpack", modifier = "mana_reg", value = 0.05}
+		for i, data in pairs(storage.forces) do
 			for id, item in pairs(data.items) do
-				if global.items[item.item].conflicts and global.items[item.item].conflicts == "m-spell-pack" then
+				if storage.items[item.item].conflicts and storage.items[item.item].conflicts == "m-spell-pack" then
 					data.money = data.money + get_sell_price(item.item)*item.count
 					data.items[id] = nil
 				end
@@ -274,12 +274,12 @@ script.on_configuration_changed(function()
 		end
 		game.print("Added spellpack talents and items :)")
 	end
-	if (game.active_mods["m-spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) < 18) and global.use_spellpack then
-		global.use_spellpack = false
-		global.all_talents.b["t23"] = nil
-		global.all_talents.b["t24"] = nil
-		global.all_talents.b["t25"] = nil
-		for _, data in pairs(global.talents) do
+	if (script.active_mods["m-spell-pack"] and tonumber(script.active_mods["m-spell-pack"]:sub(-2)) < 18) and storage.use_spellpack then
+		storage.use_spellpack = false
+		storage.all_talents.b["t23"] = nil
+		storage.all_talents.b["t24"] = nil
+		storage.all_talents.b["t25"] = nil
+		for _, data in pairs(storage.talents) do
 			if data.b["t23"] then
 				data.b["t23"] = nil
 			end
@@ -290,9 +290,9 @@ script.on_configuration_changed(function()
 				data.b["t25"] = nil
 			end
 		end
-		for i, force_data in pairs(global.forces) do
+		for i, force_data in pairs(storage.forces) do
 			for id, item in pairs(force_data.items) do
-				local item_data = global.items[item.item]
+				local item_data = storage.items[item.item]
 				if item_data.requires and item_data.requires == "m-spell-pack" then
 					force_data.money = force_data.money + get_sell_price(item.item)*item.count
 					force_data.items[id] = nil
@@ -306,7 +306,7 @@ script.on_configuration_changed(function()
 			update_items(game.forces[i])
 		end
 		game.print("Removed spellpack talents and items :(")
-		if game.active_mods["m-spell-pack"] then
+		if script.active_mods["m-spell-pack"] then
 			game.print("Please update Spell-Pack")
 		end
 	end
@@ -322,8 +322,8 @@ end)
 script.on_event({defines.events.on_player_created,defines.events.on_forces_merged,defines.events.on_player_changed_force}, refresh_forces)
 --script.on_event(defines.events.on_console_chat, function(event)
 --	if event.message == "gold" then
---		global.forces[game.get_player(event.player_index).force.name].money = global.forces[game.get_player(event.player_index).force.name].money+198000
---		game.print(global.forces[game.get_player(event.player_index).force.name].bonuses.critdamage)
+--		storage.forces[game.get_player(event.player_index).force.name].money = storage.forces[game.get_player(event.player_index).force.name].money+198000
+--		game.print(storage.forces[game.get_player(event.player_index).force.name].bonuses.critdamage)
 --	end
 --end)
 
@@ -333,8 +333,8 @@ script.on_event({defines.events.on_player_created,defines.events.on_forces_merge
 script.on_event(defines.events.on_technology_effects_reset, function (event)
 	local force = event.force
 	local force_name = force.name
-	if not global.forces or not global.forces[force_name] then return end
-	for _, modifier in pairs(global.forces[force_name].modifiers) do
+	if not storage.forces or not storage.forces[force_name] then return end
+	for _, modifier in pairs(storage.forces[force_name].modifiers) do
 		local mult = 1
 		if modifier.periodical then
 			mult = modifier.periodical
@@ -343,7 +343,7 @@ script.on_event(defines.events.on_technology_effects_reset, function (event)
 			add_modifier(force, modifier, mult)
 		end
 	end
-	for _, modifier in pairs(global.forces[force_name].talent_modifiers) do
+	for _, modifier in pairs(storage.forces[force_name].talent_modifiers) do
 		local mult = 1
 		if modifier.periodical then
 			mult = modifier.periodical
@@ -369,9 +369,9 @@ end
 
 -- TODO: optimize!
 script.on_nth_tick(6, function(event)
-	if not global.forces then return end
+	if not storage.forces then return end
 
-	for _, data in pairs(global.forces) do
+	for _, data in pairs(storage.forces) do
 		local bonuses = data.bonuses
 		for _, player in pairs(data.players) do
 			if player.valid then
@@ -379,8 +379,8 @@ script.on_nth_tick(6, function(event)
 				if character and character.valid then
 					character.health = character.health + bonuses.regen/10
 					if bonuses.pctregen > 0 then
-						character.health = character.health + (character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen
-						--game.print((character.prototype.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen*10)
+						character.health = character.health + (character.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen
+						--game.print((character.max_health + character.character_health_bonus + character.force.character_health_bonus )/1000*bonuses.pctregen*10)
 					end
 				end
 			end
@@ -388,7 +388,7 @@ script.on_nth_tick(6, function(event)
 	end
 
 	for _, player in pairs(game.connected_players) do
-		if player.character and player.character.valid and global.forces[player.force.name] and global.forces[player.force.name].bonuses.energy then
+		if player.character and player.character.valid and storage.forces[player.force.name] and storage.forces[player.force.name].bonuses.energy then
 			local target_entity = nil
 			local vehicle = player.vehicle
 			if vehicle and vehicle.grid and vehicle.grid.battery_capacity >0 and vehicle.grid.available_in_batteries < vehicle.grid.battery_capacity*0.98 then
@@ -404,7 +404,7 @@ script.on_nth_tick(6, function(event)
 					end
 				end
 				--game.print(i)
-				local remaining_electricity = global.forces[player.force.name].bonuses.energy*10^2 -- 1/10 KJ
+				local remaining_electricity = storage.forces[player.force.name].bonuses.energy*10^2 -- 1/10 KJ
 				for _=1, 2 do
 					local used_electricity = 0
 					local temp_batteries = 0
@@ -426,14 +426,14 @@ script.on_nth_tick(6, function(event)
 
 		local player_index = player.index
 		local force_name = player.force.name
-		local force_data = global.forces[force_name]
-		local player_momentum = global.momentum[player_index]
+		local force_data = storage.forces[force_name]
+		local player_momentum = storage.momentum[player_index]
 		if force_data and force_data.bonuses.momentum > 0 and player.character and player.character.valid then
 			local position_x = player.position.x
 			local position_y = player.position.y
 			if not player_momentum then
-				global.momentum[player_index] = {position_x = position_x, position_y = position_y, momentum = 0}
-				player_momentum = global.momentum[player_index]
+				storage.momentum[player_index] = {position_x = position_x, position_y = position_y, momentum = 0}
+				player_momentum = storage.momentum[player_index]
 			end
 
 			if position_x == player_momentum.position_x and position_y == player_momentum.position_y then
@@ -466,7 +466,7 @@ script.on_nth_tick(61, function()
 end)
 
 function disable_immolation(player)
-	global.immolation[player.index] = nil
+	storage.immolation[player.index] = nil
 	if player.character and player.character.valid and player.character.stickers then
 		for _, sticker in pairs(player.character.stickers) do
 			if sticker.name == "rpgitems-flamecloak-sticker" then
@@ -478,8 +478,8 @@ end
 
 local _entity_search_filter = {type = {"unit", "character"}, position = {}, radius = 6}
 script.on_nth_tick(25, function()
-	local immolations = global.immolation
-	local mod_forces_data = global.forces
+	local immolations = storage.immolation
+	local mod_forces_data = storage.forces
 	for _, player in pairs(game.connected_players) do
 		if immolations[player.index] then
 			local player_force = player.force
@@ -509,7 +509,7 @@ end)
 -- TODO: Refactor
 local _stack_data = {name='', count=1}
 script.on_nth_tick(60, function()
-	for force_index, force_data in pairs(global.forces) do
+	for force_index, force_data in pairs(storage.forces) do
 		--income
 		--local player = game.players[id]
 		force_data.money = force_data.money + force_data.bonuses.income
@@ -525,7 +525,7 @@ script.on_nth_tick(60, function()
 		end
 
 		-- TODO: Refactor
-		local giveitem_cache = global.giveitem_cache
+		local giveitem_cache = storage.giveitem_cache
 		for item, persec in pairs(force_data.giveitem) do
 			for _, player in pairs(force_data.players) do
 				local player_index = player.index
@@ -551,7 +551,7 @@ script.on_nth_tick(60, function()
 						create_item_sprites(player)
 					end
 					--giveitem
-					local cached_given_items = global.giveitem_cache[player.index]
+					local cached_given_items = storage.giveitem_cache[player.index]
 					local character = player.character
 					local inventory = player.get_main_inventory()
 					local player_insert = player.insert
@@ -572,8 +572,8 @@ script.on_nth_tick(60, function()
 		end
 	end
 
-	local forces = global.forces
-	local repairing_data = global.repairing
+	local forces = storage.forces
+	local repairing_data = storage.repairing
 	for id, entity in pairs(repairing_data) do
 		if not entity or not entity.valid then
 			repairing_data[id] = nil
@@ -584,7 +584,7 @@ script.on_nth_tick(60, function()
 			if not force_data or repair_bonus == 0 or entity.get_health_ratio() == 1 then
 				repairing_data[id] = nil
 			else
-				entity.health = entity.health + entity.prototype.max_health / 100 * repair_bonus
+				entity.health = entity.health + entity.max_health / 100 * repair_bonus
 			end
 		end
 	end
@@ -592,7 +592,7 @@ end)
 
 script.on_nth_tick(150, function(event)
 	local tick = game.tick
-	local indestructible_characters = global.indestructible_characters
+	local indestructible_characters = storage.indestructible_characters
 	for character, _tick in pairs(indestructible_characters) do
 		if tick >= _tick then
 			if character and character.valid then
@@ -608,7 +608,7 @@ script.on_event(defines.events.on_player_main_inventory_changed, function(event)
 
 	local player_index = event.player_index
 	local player = game.get_player(player_index)
-	local player_items_cache = global.giveitem_cache[player_index]
+	local player_items_cache = storage.giveitem_cache[player_index]
 	if not (player.character and player.character.valid and player_items_cache) then return end
 
 	local inventory = player.get_main_inventory()
@@ -689,12 +689,18 @@ script.on_event(defines.events.on_entity_died, function(event)
 	if not (force and entity and entity.valid) then return end
 	if entity.force == force then return end
 	local force_name = force.name
-	local force_data = global.forces[force_name]
+	local force_data = storage.forces[force_name]
 	if not force_data then return end
 
 	--local player_id = tonumber(force.name:sub(8))
 	force_data.money = force_data.money + 1
-	--entity.surface.create_entity{name= "flying-text", color = {r=0,g=0.7,b=0}, position = entity.position, render_player_index = player_id, text = "+1"}
+
+	-- player.create_local_flying_text{
+	-- 	position = entity.position,
+	-- 	time_to_live = 120,
+	-- 	text = "+1",
+	--	color = {r=0,g=0.7,b=0}
+	-- }
 	for _, player in pairs(force_data.players) do -- TODO: Check
 		player.gui.left.rpgitems_item_gui.money.caption = floor(force_data.money).."[img=rpgitems-coin]"
 	end
@@ -749,7 +755,7 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 
 	if entity then
 		local force = entity.force
-		local force_data = global.forces[force.name]
+		local force_data = storage.forces[force.name]
 		if force_data == nil then return end
 
 		local force_bonuses = force_data.bonuses
@@ -760,32 +766,32 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 			end
 			-- local player = entity.player
 			--if event.damage_type.name:sub(1,4)=="osp_" then
-			--	local mres = global.forces[player.force.name].bonuses.magic_resistance /(global.forces[player.force.name].bonuses.magic_resistance+100)
+			--	local mres = storage.forces[player.force.name].bonuses.magic_resistance /(storage.forces[player.force.name].bonuses.magic_resistance+100)
 			--	entity.health = entity.health + event.final_damage_amount*mres
 			--else
 				local armor = force_bonuses.armor
 				apply_armor(event, armor / (armor+100))
 			--end
 		elseif force_data and force_bonuses.repair > 0 and entity.name ~= "RITEG-1" then
-			global.repairing[entity.unit_number] = entity
+			storage.repairing[entity.unit_number] = entity
 		end
 	end
 
 	if not (cause and cause.valid) then return end
 	if not entity.valid then return end
-	local force_data = global.forces[cause.force.name]
+	local force_data = storage.forces[cause.force.name]
 	if force_data == nil then return end
 
 
 	local force_bonuses = force_data.bonuses
 	local extradamage = 0
 	--if event.damage_type.name == "chardamage" then
-	--	local mult = global.forces[force].bonuses.chardamage_mult+cause.force.get_turret_attack_modifier("character")
-	--	extradamage = global.forces[force].bonuses.chardamage*mult + (mult-1)*8
+	--	local mult = storage.forces[force].bonuses.chardamage_mult+cause.force.get_turret_attack_modifier("character")
+	--	extradamage = storage.forces[force].bonuses.chardamage*mult + (mult-1)*8
 	--	extradamage = entity.damage(extradamage, cause.force, "physical")
 	--end
 	if random() < force_bonuses.stun * (cause.type == "character" and 6 or 2) then
-		--game.print(global.forces[force].bonuses.stun * (cause.type == "character" and 2 or 1))
+		--game.print(storage.forces[force].bonuses.stun * (cause.type == "character" and 2 or 1))
 		if entity.type == "unit" or entity.type == "character" then
 			entity.surface.create_entity{ name="rpgitems-stun-sticker", position=entity.position, target=entity }
 		end
@@ -807,7 +813,14 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 		--if event.
 		extradamage = entity.damage((event.original_damage_amount+extradamage)*(1+force_bonuses.critdamage), cause.force, event.damage_type.name)
 		local dmg = extradamage + event.final_damage_amount
-		surface.create_entity{name="flying-text", position = pos, color = RED_COLOR, text = floor(dmg)}
+
+		rendering.draw_text({
+			text = tostring(floor(dmg)),
+			time_to_live = 120,
+			surface = surface,
+			color = RED_COLOR,
+			target = pos
+		})
 	end
 end, {
 	{filter = "final-damage-amount", comparison = ">", value = 0, mode = "and"},
@@ -819,7 +832,7 @@ end, {
 script.on_event(defines.events.on_pre_player_died, function(event)
 	local player = game.get_player(event.player_index)
 	local force_name = player.force.name
-	local force_data = global.forces[force_name]
+	local force_data = storage.forces[force_name]
 	if not (force_data and force_data.bonuses.revive > 0) then return end
 
 	local item_cooldowns = force_data.item_cooldowns
@@ -839,7 +852,7 @@ script.on_event(defines.events.on_pre_player_died, function(event)
 			character.health = 1
 			character.destructible = false
 			player.surface.create_entity{name = "rpgitems-halo-sticker-"..level, position= player.position, target = character}
-			global.indestructible_characters[character] = event.tick+level*60
+			storage.indestructible_characters[character] = event.tick+level*60
 		end
 	end
 end)

@@ -25,13 +25,13 @@ script.on_event(defines.events.on_gui_click, function(event)
 	local player = game.get_player(element.player_index)
 	if not (player and player.valid) then return end
 	local force = player.force
-	local force_data = global.forces[player.force.name]
+	local force_data = storage.forces[player.force.name]
 	local gui_name = element.name
 	local items = nil
 	if element.type == "sprite-button" then
-		items = global.items[element.sprite]
+		items = storage.items[element.sprite]
 	end
-	local item = global.items[gui_name]
+	local item = storage.items[gui_name]
 	local parent_name = ""
 	if element.parent then
 		parent_name = element.parent.name
@@ -40,10 +40,10 @@ script.on_event(defines.events.on_gui_click, function(event)
 	if gui_name == "rpgitems_bonus_slot" then
 		if event.button == defines.mouse_button_type.right then
 			local price_mult = settings.global["rpgitems_price_mult"].value
-			if force_data.money >= 50000+force_data.bonus_slots*10000*(global.price_mult or price_mult) then
-				force_data.money = force_data.money-(50000+force_data.bonus_slots*10000*(global.price_mult or price_mult))
+			if force_data.money >= 50000+force_data.bonus_slots*10000*(storage.price_mult or price_mult) then
+				force_data.money = force_data.money-(50000+force_data.bonus_slots*10000*(storage.price_mult or price_mult))
 				force_data.bonus_slots = force_data.bonus_slots + 1
-				element.number = 50000+force_data.bonus_slots*10000*(global.price_mult or price_mult)
+				element.number = 50000+force_data.bonus_slots*10000*(storage.price_mult or price_mult)
 				for _, p in pairs(force_data.players) do
 					create_equipment_gui(p)
 					if p.gui.center.rpgitems_market then
@@ -95,9 +95,9 @@ script.on_event(defines.events.on_gui_click, function(event)
 			end
 			if item_name == "rpgitems_amnesia_book" then
 				local force_name = player.force.name
-				global.talents[force_name].ready = nil
-				global.forces[force_name].bonus_talents = global.forces[force_name].bonus_talents + 1
-				for _, p in pairs(global.forces[force_name].players) do
+				storage.talents[force_name].ready = nil
+				storage.forces[force_name].bonus_talents = storage.forces[force_name].bonus_talents + 1
+				for _, p in pairs(storage.forces[force_name].players) do
 					talents_gui(p)
 				end
 			elseif item_name == "rpgitems_health_potion" then
@@ -114,10 +114,10 @@ script.on_event(defines.events.on_gui_click, function(event)
 					remote.call("spell-pack", "set", "players", players)
 				end
 			elseif item_name == "rpgitems_flamecloak" then
-				global.immolation[player.index] = not global.immolation[player.index]
+				storage.immolation[player.index] = not storage.immolation[player.index]
 			elseif item_name == "rpgitems_flamecloak_spepa" then
-				global.immolation[player.index] = not global.immolation[player.index]
-				if global.immolation[player.index] and player.character and player.character.valid then
+				storage.immolation[player.index] = not storage.immolation[player.index]
+				if storage.immolation[player.index] and player.character and player.character.valid then
 					player.surface.create_entity{
 						name = "rpgitems-flamecloak-sticker",
 						position = player.position,
@@ -176,7 +176,7 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
 --		end
 --
 --
---	--local talents_string = encode(global.talents[player.index])
+--	--local talents_string = encode(storage.talents[player.index])
 --	--local compressed =  LibDeflate:CompressZlib(talents_string,{strategy="fixed"})
 --	--local b64 = base64.encode( compressed)
 --	--copypaste.text = b64
@@ -192,8 +192,8 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
 				--local talents =decode(decompressed)
 				--local talents =decode(unbased)
 				if talents_status then
-					global.talents[player.force.name] = talents
-					for _, p in pairs(global.forces[player.force.name].players) do
+					storage.talents[player.force.name] = talents
+					for _, p in pairs(storage.forces[player.force.name].players) do
 						talents_gui(p)
 					end
 				else
@@ -218,9 +218,9 @@ function remove_margin_padding(elem)
 		elem.style.bottom_padding = 0
 end
 function apply_talents(force)
-	local force_data = global.forces[force.name]
-	--if not global.forces[force.name] then return end
-	--if not global.talents[player.force.name].ready then return end
+	local force_data = storage.forces[force.name]
+	--if not storage.forces[force.name] then return end
+	--if not storage.talents[player.force.name].ready then return end
 	local store_periodical = {}
 	for _, mod in pairs(force_data.talent_modifiers) do
 		local mult = 1
@@ -232,9 +232,9 @@ function apply_talents(force)
 	end
 	force_data.talent_modifiers = {}
 	local talent_modifiers = {}
-	for rgb, data in pairs(global.talents[force.name]) do
+	for rgb, data in pairs(storage.talents[force.name]) do
 		if rgb ~= "ready" then
-			local talents = global.all_talents[rgb]
+			local talents = storage.all_talents[rgb]
 			for id, amount in pairs(data) do
 				local temp_mod = deepcopy(talents[id])
 				if temp_mod then -- TODO: check
@@ -273,8 +273,8 @@ function talents_gui_click(event)
 	if parent and parent.name:sub(1,23) == "rpgitems_talent_choice_" then
 		local player = game.get_player(event.player_index)
 		local force_name = player.force.name
-		local BONUS_TALENTS = global.forces[force_name].bonus_talents
-		local force_talents = global.talents[force_name]
+		local BONUS_TALENTS = storage.forces[force_name].bonus_talents
+		local force_talents = storage.talents[force_name]
 		if event.button == defines.mouse_button_type.left then
 			if event.shift then
 				for _=1, 5 do
@@ -300,15 +300,15 @@ function talents_gui_click(event)
 			end
 		end
 		--verify_talents(game.forces[force_name])
-		for _, p in pairs(global.forces[force_name].players) do
+		for _, p in pairs(storage.forces[force_name].players) do
 			talents_gui(p)
 		end
 	elseif element_name == "rpgitems_talents_close" then
 		local player = game.get_player(event.player_index)
-		for _, p in pairs(global.forces[player.force.name].players) do
+		for _, p in pairs(storage.forces[player.force.name].players) do
 			p.gui.center.talents_gui.destroy()
 		end
-		global.talents[player.force.name].ready = true
+		storage.talents[player.force.name].ready = true
 		apply_talents(player.force)
 	--elseif element_name == "rpgitems_talents_copypaste_button" then
 	--	local player = game.get_player(event.player_index)
@@ -323,7 +323,7 @@ function talents_gui_click(event)
 	--			--local talents =decode(decompressed)
 	--			--local talents =decode(unbased)
 	--			if talents_status then
-	--				global.talents[player.index] = talents
+	--				storage.talents[player.index] = talents
 	--				talents_gui(player)
 	--			else
 	--				player.print("JSON failed")
@@ -337,11 +337,11 @@ function talents_gui_click(event)
 	end
 end
 function verify_talents(force)
-	if not global.talents[force.name] then
+	if not storage.talents[force.name] then
 		log("\"" .. force.name .. "\" force doesn't have talents")
 		set_talents(force)
 	end
-	local talents = global.talents[force.name]
+	local talents = storage.talents[force.name]
 	talents.ready = nil
 
 	for rgb, data in pairs(talents) do
@@ -353,7 +353,7 @@ function verify_talents(force)
 		end
 	end
 
-	local BONUS_TALENTS = global.forces[force.name].bonus_talents
+	local BONUS_TALENTS = storage.forces[force.name].bonus_talents
 	local ret = {
 		r = {spent = 0, over_spent = 0, width = 8 + BONUS_TALENTS},
 		g = {spent = 0, over_spent = 0, width = 8 + BONUS_TALENTS},
@@ -434,15 +434,15 @@ function filter_clicks(button, input)
 end
 
 function set_talents(force)
-	global.talents[force.name] = global.talents[force.name] or {
+	storage.talents[force.name] = storage.talents[force.name] or {
 		r={},g={},b={}
 	}
 end
 
 function talents_gui(player)
 	local force = player.force
-	local BONUS_TALENTS = global.forces[force.name].bonus_talents
-	local talents = global.talents
+	local BONUS_TALENTS = storage.forces[force.name].bonus_talents
+	local talents = storage.talents
 	if not talents[force.name] then set_talents(force) end
 
 	local verified_talents = verify_talents(force)
@@ -519,9 +519,9 @@ function talents_gui(player)
 	fr.style.width = 175
 	--fr.style.right_margin = -50
 	local forec_talents = talents[force.name]
-	local talent_localizations = global.talent_localizations
+	local talent_localizations = storage.talent_localizations
 	local i = 1
-	for name in pairs(global.all_talents.r) do
+	for name in pairs(storage.all_talents.r) do
 		local temp_flow = fr.add{type="flow", name="rpgitems_talent_choice_r_"..i, direction = "horizontal"}
 		local label = temp_flow.add{type="label", name = "l"..i}
 		remove_margin_padding(label)
@@ -575,7 +575,7 @@ function talents_gui(player)
 	fg.style.width = 175
 	--fg.style.right_margin = -50
 	local i = 1
-	for name in pairs(global.all_talents.g) do
+	for name in pairs(storage.all_talents.g) do
 		local temp_flow = fg.add{type="flow", name="rpgitems_talent_choice_g_"..i, direction = "horizontal"}
 		local label = temp_flow.add{type="label", name = "l"..i}
 		remove_margin_padding(label)
@@ -628,7 +628,7 @@ function talents_gui(player)
 	fb.style.width = 175
 	--fb.style.right_margin = -50
 	local i=1
-	for name in pairs(global.all_talents.b) do
+	for name in pairs(storage.all_talents.b) do
 		local temp_flow = fb.add{type="flow", name="rpgitems_talent_choice_b_"..i, direction = "horizontal"}
 		local label = temp_flow.add{type="label", name = "l"..i}
 		remove_margin_padding(label)
@@ -638,12 +638,12 @@ function talents_gui(player)
 		label.style.right_margin = -7
 		label.style.left_margin = 3
 		label.style.top_margin = -1
-		label.caption=global.talents[force.name]["b"][name] or 0
+		label.caption = storage.talents[force.name]["b"][name] or 0
 		local button
 		if verified_talents["b"].spent >= 8+BONUS_TALENTS then
 			if verified_talents.total_spent >= 27+BONUS_TALENTS*4 and verified_talents.a == 4+BONUS_TALENTS then
 				button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
-				if not global.talents[force.name].b[name] or global.talents[force.name].b[name] == 0 then
+				if not storage.talents[force.name].b[name] or storage.talents[force.name].b[name] == 0 then
 					button.enabled = false
 				else
 					filter_clicks(button, "right")
@@ -655,14 +655,14 @@ function talents_gui(player)
 			end
 		elseif verified_talents.total_spent >= 28+BONUS_TALENTS*4 then
 			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_gray_button"}
-			if not global.talents[force.name].b[name] or global.talents[force.name].b[name] == 0 then
+			if not storage.talents[force.name].b[name] or storage.talents[force.name].b[name] == 0 then
 				button.enabled = false
 			else
 				filter_clicks(button, "right")
 			end
 		else
 			button = temp_flow.add{type="button", name = name, caption = talent_localizations[name], style="rpgitems_white_button"}
-			if not global.talents[force.name].b[name] or global.talents[force.name].b[name] == 0 then
+			if not storage.talents[force.name].b[name] or storage.talents[force.name].b[name] == 0 then
 				filter_clicks(button, "left")
 			end
 		end
@@ -687,7 +687,7 @@ function sort_items(array)
 	end
 	for name, count in pairs(itemcounts) do
 		while count > 0 do
-			local tempcount = math.min((global.items[name].stack_size or 1), count)
+			local tempcount = math.min((storage.items[name].stack_size or 1), count)
 			count = count - tempcount -- what?
 			temp[#temp+1] = {item = name, count = tempcount}
 		end
@@ -696,8 +696,8 @@ function sort_items(array)
 end
 
 function insert_item(force, item)
-	local force_items = global.forces[force.name].items
-	local stack_size = global.items[item].stack_size
+	local force_items = storage.forces[force.name].items
+	local stack_size = storage.items[item].stack_size
 	if not stack_size then
 		force_items[#force_items+1] = {item = item, count = 1}
 	else
@@ -717,8 +717,8 @@ function insert_item(force, item)
 end
 
 script.on_nth_tick(21600, function(event) -- every 6 minutes
-	if not global.forces or global.per_minute then return end
-	for index, data in pairs(global.forces) do
+	if not storage.forces or storage.per_minute then return end
+	for index, data in pairs(storage.forces) do
 		local force=game.forces[index]
 		for _, modifier in pairs(data.modifiers) do
 			if modifier.periodical then
@@ -738,8 +738,8 @@ script.on_nth_tick(21600, function(event) -- every 6 minutes
 end)
 
 script.on_nth_tick(10800,function(event) -- every 3 minutes
-	if not global.forces or not global.per_minute then return end
-	for index, data in pairs(global.forces) do
+	if not storage.forces or not storage.per_minute then return end
+	for index, data in pairs(storage.forces) do
 		local force=game.forces[index]
 		for _, modifier in pairs(data.modifiers) do
 			if modifier.periodical then
@@ -763,14 +763,14 @@ function remove_modifier(force, modifier, mult)
 	if modifier.type == "force" then
 		if modifier.modifier == "gun_speed_modifier" then
 			if not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do
+				for a in pairs(prototypes.ammo_category) do
 					local new_mod = math.max(0,force.get_gun_speed_modifier(a) - modifier.value*mult)
 					if new_mod < 0.00000001 then
 						new_mod = 0
 					end
 					force.set_gun_speed_modifier(a, new_mod )
 				end
-			elseif not game.ammo_category_prototypes[modifier.ammo] then
+			elseif not prototypes.ammo_category[modifier.ammo] then
 				game.print("ammo type "..modifier.ammo.." not existing anymore")
 			else
 				local new_mod = math.max(0,force.get_gun_speed_modifier(modifier.ammo) - modifier.value*mult)
@@ -781,7 +781,7 @@ function remove_modifier(force, modifier, mult)
 			end
 		elseif modifier.modifier =="ammo_damage_modifier" then
 			if not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do
+				for a in pairs(prototypes.ammo_category) do
 					local new_mod = math.max(0,force.get_ammo_damage_modifier(a) - modifier.value*mult)
 					if new_mod < 0.00000001 then
 						new_mod = 0
@@ -793,7 +793,7 @@ function remove_modifier(force, modifier, mult)
 				--	new_mod = 0
 				--end
 				--global.forces[force.name].bonuses.chardamage_mult = new_mod
-			elseif not game.ammo_category_prototypes[modifier.ammo] then
+			elseif not prototypes.ammo_category[modifier.ammo] then
 				game.print("ammo type "..modifier.ammo.." not existing anymore")
 			else
 				local new_mod = math.max(0,force.get_ammo_damage_modifier(modifier.ammo) - modifier.value*mult)
@@ -806,7 +806,7 @@ function remove_modifier(force, modifier, mult)
 			if not modifier.turret then
 				game.print("ERROR: all turrets modifier currently not supported")
 				error("all turrets modifier currently not supported")
-				for t, data in pairs(game.entity_prototypes) do
+				for t, data in pairs(prototypes.entity) do
 					if data.type == "fluid-turret" or data.type == "ammo-turret" or data.type == "electric-turret" then
 						local new_mod = math.max(0,force.get_turret_attack_modifier(t) - modifier.value*mult)
 						if new_mod < 0.00000001 then
@@ -815,7 +815,7 @@ function remove_modifier(force, modifier, mult)
 						force.set_turret_attack_modifier(t, new_mod)
 					end
 				end
-			elseif not game.entity_prototypes[modifier.turret] then
+			elseif not prototypes.entity[modifier.turret] then
 				game.print("turret type "..modifier.turret.." not existing anymore")
 			else
 				local new_mod = math.max(0,force.get_turret_attack_modifier(modifier.turret) - modifier.value*mult)
@@ -841,24 +841,24 @@ function remove_modifier(force, modifier, mult)
 			if new_mod < 0.00000001 then
 				new_mod = 0
 			end
-			global.forces[force.name].bonuses[modifier.modifier] = new_mod
+			storage.forces[force.name].bonuses[modifier.modifier] = new_mod
 		else
-			local new_mod = global.forces[force.name].bonuses[modifier.modifier] - modifier.value*mult
+			local new_mod = storage.forces[force.name].bonuses[modifier.modifier] - modifier.value*mult
 			if new_mod < 0.00000001 then
 				new_mod = 0
 			end
-			global.forces[force.name].bonuses[modifier.modifier] = new_mod
+			storage.forces[force.name].bonuses[modifier.modifier] = new_mod
 		end
 	elseif modifier.type == "giveitem" then
 		local new_mod = math.max(0,global.forces[force.name].giveitem[modifier.item] - modifier.per_second*mult)
 		if new_mod < 0.00000001 then
 			new_mod = 0
 		end
-		global.forces[force.name].giveitem[modifier.item] = new_mod
+		storage.forces[force.name].giveitem[modifier.item] = new_mod
 	elseif modifier.type == "spellpack" then
-		if remote.interfaces["spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
+		if remote.interfaces["spell-pack"] and tonumber(script.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 			--local players =remote.call("spell-pack","get","players")
-			--for _, player in pairs(global.forces[force.name].players) do
+			--for _, player in pairs(storage.forces[force.name].players) do
 			--	local new_mod = players[player.index][modifier.modifier]- modifier.value*mult
 			--	players[player.index][modifier.modifier] = new_mod
 			--end
@@ -877,21 +877,21 @@ function add_modifier(force, modifier, mult)
 	if modifier.type == "force" then
 		if modifier.modifier == "gun_speed_modifier" then
 			if not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do
+				for a in pairs(prototypes.ammo_category) do
 					force.set_gun_speed_modifier(a, math.max(0,force.get_gun_speed_modifier(a) + modifier.value*mult))
 				end
-			elseif not game.ammo_category_prototypes[modifier.ammo] then
+			elseif not prototypes.ammo_category[modifier.ammo] then
 				game.print("ammo type "..modifier.ammo.." not existing anymore")
 			else
 				force.set_gun_speed_modifier(modifier.ammo, math.max(0,force.get_gun_speed_modifier(modifier.ammo) + modifier.value*mult))
 			end
 		elseif modifier.modifier =="ammo_damage_modifier" then
 			if not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do
+				for a in pairs(prototypes.ammo_category) do
 					force.set_ammo_damage_modifier(a, math.max(0,force.get_ammo_damage_modifier(a) + modifier.value*mult))
 				end
-				--global.forces[force.name].bonuses.chardamage_mult = global.forces[force.name].bonuses.chardamage_mult +modifier.value*mult
-			elseif not game.ammo_category_prototypes[modifier.ammo] then
+				--global.forces[force.name].bonuses.chardamage_mult = storage.forces[force.name].bonuses.chardamage_mult +modifier.value*mult
+			elseif not prototypes.ammo_category[modifier.ammo] then
 				game.print("ammo type "..modifier.ammo.." not existing anymore")
 			else
 				force.set_ammo_damage_modifier(modifier.ammo, math.max(0,force.get_ammo_damage_modifier(modifier.ammo) + modifier.value*mult))
@@ -900,12 +900,12 @@ function add_modifier(force, modifier, mult)
 			if not modifier.turret then
 				game.print("ERROR: all turrets modifier currently not supported")
 				error("all turrets modifier currently not supported")
-				for t, data in pairs(game.entity_prototypes) do
+				for t, data in pairs(prototypes.entity) do
 					if data.type == "fluid-turret" or data.type == "ammo-turret" or data.type == "electric-turret" then
 						force.set_turret_attack_modifier(t, math.max(0,force.get_turret_attack_modifier(t) + modifier.value*mult))
 					end
 				end
-			elseif not game.entity_prototypes[modifier.turret] then
+			elseif not prototypes.entity[modifier.turret] then
 				game.print("turret type "..modifier.turret.." not existing anymore")
 			else
 				force.set_turret_attack_modifier(modifier.turret, math.max(0,force.get_turret_attack_modifier(modifier.turret) + modifier.value*mult))
@@ -923,14 +923,14 @@ function add_modifier(force, modifier, mult)
 		end
 	elseif modifier.type == "other" then
 		--if modifier.modifier == "income" then
-			global.forces[force.name].bonuses[modifier.modifier] = global.forces[force.name].bonuses[modifier.modifier] + modifier.value*mult
+			storage.forces[force.name].bonuses[modifier.modifier] = storage.forces[force.name].bonuses[modifier.modifier] + modifier.value*mult
 		--end
 	elseif modifier.type == "giveitem" then
-		global.forces[force.name].giveitem[modifier.item] = (global.forces[force.name].giveitem[modifier.item] or 0) + modifier.per_second*mult
+		storage.forces[force.name].giveitem[modifier.item] = (storage.forces[force.name].giveitem[modifier.item] or 0) + modifier.per_second*mult
 	elseif modifier.type == "spellpack" then
-		if remote.interfaces["spell-pack"] and tonumber(game.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
+		if remote.interfaces["spell-pack"] and tonumber(script.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 			--local players =remote.call("spell-pack","get","players")
-			--for _, player in pairs(global.forces[force.name].players) do
+			--for _, player in pairs(storage.forces[force.name].players) do
 			--	local new_mod = players[player.index][modifier.modifier]+ modifier.value*mult
 			--	players[player.index][modifier.modifier] = new_mod
 			--end
@@ -979,7 +979,7 @@ function add_modifiers(force, tbl, stack_cache)
 		--if modifier.type == "player" then
 		--	player[modifier.modifier] = player[modifier.modifier] + modifier.value
 		--else
-		local modifiers = global.forces[force.name].modifiers
+		local modifiers = storage.forces[force.name].modifiers
 		local unique = false
 		if modifier.unique then
 			for _, checkmod in pairs(modifiers) do
@@ -990,7 +990,7 @@ function add_modifiers(force, tbl, stack_cache)
 		end
 		if not unique then
 			if modifier.modifier =="ammo_damage_modifier" and not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do
+				for a in pairs(prototypes.ammo_category) do
 					local new_mod = deepcopy(mod)
 					new_mod.ammo = a
 					add_modifier(force, new_mod, mult)
@@ -1002,7 +1002,7 @@ function add_modifiers(force, tbl, stack_cache)
 				--end
 				--global.forces[force.name].bonuses.chardamage_mult = new_mod
 			elseif modifier.modifier == "gun_speed_modifier" and not modifier.ammo then
-				for a in pairs(game.ammo_category_prototypes) do
+				for a in pairs(prototypes.ammo_category) do
 					local new_mod = deepcopy(mod)
 					new_mod.ammo = a
 					add_modifier(force, new_mod, mult)
@@ -1039,8 +1039,8 @@ end
 
 function create_item_sprites(player)
 	local i = 1
-	local force_data = global.forces[player.force.name]
-	local items = global.items
+	local force_data = storage.forces[player.force.name]
+	local items = storage.items
 	local equipment_table = player.gui.left.rpgitems_item_gui.equipment_table
 	for _, data in pairs(force_data.items) do
 		local item_name = data.item
@@ -1082,11 +1082,11 @@ function create_item_sprites(player)
 end
 
 function update_items(force, update)
-	local mod_forces_data = global.forces
+	local mod_forces_data = storage.forces
 	local force_data = mod_forces_data[force.name]
 	local stacks = remove_modifiers(force, force_data.modifiers)
 	force_data.modifiers = {}
-	local items = global.items
+	local items = storage.items
 	for _, data in pairs(force_data.items) do
 		local item = items[data.item]
 		for _=1, (data.count or 1) do
@@ -1109,7 +1109,7 @@ function update_items(force, update)
 end
 
 function lock_items(player)
-	local mod_items_data = global.items
+	local mod_items_data = storage.items
 	for _, elem in pairs(player.gui.left.rpgitems_item_gui.equipment_table.children) do
 		--print("'"..elem.sprite.."'")
 		if elem.sprite ~="" and elem.sprite ~="transparent32" and mod_items_data[elem.sprite].func then
@@ -1134,18 +1134,18 @@ function style_item_button(elem)
 end
 
 function remove_parts(force,itemname, only_calculate_price)
-	local price = global.items[itemname].price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
+	local price = storage.items[itemname].price*(storage.price_mult or settings.global["rpgitems_price_mult"].value)
 	-- local tableremove = {}
-	if global.items[itemname].parts then
-		for _, part in pairs(global.items[itemname].parts) do
+	if storage.items[itemname].parts then
+		for _, part in pairs(storage.items[itemname].parts) do
 			local removed_amount = 0
-			local inventory = only_calculate_price or global.forces[force.name].items
+			local inventory = only_calculate_price or storage.forces[force.name].items
 			for i, data in pairs( inventory ) do
 				if removed_amount < part.count then
 					if data.item == part.name then
 						if data.count == 1 then
 							--if not only_calculate_price then
-								--table.remove(global.forces[player.force.name].items,i)
+								--table.remove(storage.forces[player.force.name].items,i)
 								inventory[i] = nil
 							--end
 							removed_amount = removed_amount +1
@@ -1154,7 +1154,7 @@ function remove_parts(force,itemname, only_calculate_price)
 							--if not only_calculate_price then
 								data.count = data.count - temp
 								if data.count == 0 then
-									--table.remove(global.forces[player.force.name].items,i)
+									--table.remove(storage.forces[player.force.name].items,i)
 									inventory[i] = nil
 								end
 							--end
@@ -1173,11 +1173,11 @@ end
 
 function recursive_can_insert(force,itemname)
 	local cleared_slots = 0
-	-- local price = global.items[itemname].price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
-	if global.items[itemname].parts then
-		for _, part in pairs(global.items[itemname].parts) do
+	-- local price = storage.items[itemname].price*(storage.price_mult or settings.global["rpgitems_price_mult"].value)
+	if storage.items[itemname].parts then
+		for _, part in pairs(storage.items[itemname].parts) do
 			local removed_amount = 0
-			for _, data in pairs( global.forces[force.name].items ) do
+			for _, data in pairs( storage.forces[force.name].items ) do
 				if removed_amount < part.count then
 					if data.item == part.name then
 						if data.count == 1 then
@@ -1205,8 +1205,8 @@ function recursive_can_insert(force,itemname)
 end
 
 function can_insert_item(force, item)
-	local stack_size = global.items[item].stack_size
-	local force_data = global.forces[force.name]
+	local stack_size = storage.items[item].stack_size
+	local force_data = storage.forces[force.name]
 	if table_length(force_data.items) < 4 + force_data.bonus_slots then
 		return true
 	elseif stack_size then
@@ -1224,8 +1224,8 @@ function can_insert_item(force, item)
 end
 
 function get_sell_price(itemname)
-	local item_data = global.items[itemname]
-	local price = item_data.price*(global.price_mult or settings.global["rpgitems_price_mult"].value)
+	local item_data = storage.items[itemname]
+	local price = item_data.price*(storage.price_mult or settings.global["rpgitems_price_mult"].value)
 	if item_data.parts then
 		for _, part in pairs(item_data.parts) do
 			price = price + get_sell_price(part.name) * part.count
@@ -1235,7 +1235,7 @@ function get_sell_price(itemname)
 end
 
 function buy_item(force, itemname, only_calculate_price)
-	local force_data = global.forces[force.name]
+	local force_data = storage.forces[force.name]
 	if only_calculate_price then
 		only_calculate_price = deepcopy(force_data.items)
 	end
@@ -1263,28 +1263,28 @@ function open_market(player, selected_item)
 	local table = gui.add{type="table", name = "market_table", column_count = 8}
 	--table.style.minimal_height = 300
 	local excluded_items = {}
-	local force_data = global.forces[player.force.name]
+	local force_data = storage.forces[player.force.name]
 	local technologies = player.force.technologies
-	for _, data in pairs(global.items) do
+	for _, data in pairs(storage.items) do
 		if data.parts and (not data.tech_requirement or technologies[data.tech_requirement].researched) then
 			for _, data2 in pairs(data.parts) do
 				excluded_items[data2.name] = true
 			end
 		end
 	end
-	for name, data in pairs(global.items) do
-		local item = global.items[name]
+	for name, data in pairs(storage.items) do
+		local item = storage.items[name]
 		if (not excluded_items[name] or item.always_show_in_main_list) -- it's messy...
 			and	(not item.requires
-				or (game.active_mods[item.requires]
+				or (script.active_mods[item.requires]
 					and (not item.andversion
-						or tonumber(game.active_mods[item.requires]:sub(-2)) >= item.andversion
+						or tonumber(script.active_mods[item.requires]:sub(-2)) >= item.andversion
 					)	)	)
 			and (not item.conflicts
-				or not (game.active_mods[item.conflicts]
+				or not (script.active_mods[item.conflicts]
 					and (
 						not item.andversion
-						or tonumber(game.active_mods[item.conflicts]:sub(-2)) >= item.andversion
+						or tonumber(script.active_mods[item.conflicts]:sub(-2)) >= item.andversion
 					)
 				)
 			)
@@ -1294,17 +1294,17 @@ function open_market(player, selected_item)
 			if name == "rpgitems_bonus_slot" then
 				button = table.add{
 					type="sprite-button", name = name,
-					number=50000+force_data.bonus_slots*10000*(global.price_mult or settings.global["rpgitems_price_mult"].value),
-					sprite = name, style = "quick_bar_slot_button"
+					number=50000+force_data.bonus_slots*10000*(storage.price_mult or settings.global["rpgitems_price_mult"].value),
+					sprite = name, style = "slot_button"
 				}
 			else
-				local style = "quick_bar_slot_button"
+				local style = "slot_button"
 				if buy_item(player.force,name,true) < get_sell_price(name) then
 					--style = "tool_button" --solid white
 					--style = "highlighted_tool_button" --thicker? solid orange
 					--style = "search_mods_button" --solid white
 					--style = "side_menu_button_hovered" --solid orange
-					--style = "recipe_slot_button" --ultrathin white
+					--style = "slot_button" --ultrathin white
 					--style = "frame_button" --thick strong gap
 					--style = "drop_target_button" --dotted blue
 					--style = "slot_button" --ultrathin white
@@ -1316,7 +1316,7 @@ function open_market(player, selected_item)
 					--style = "not_accessible_station_in_station_selection" --inverted dark
 					--style = "button_with_shadow" --white
 					--style = "train_schedule_fulfilled_item_select_button" --big green
-					--style = "quick_bar_slot_button"
+					--style = "slot_button"
 					--style = "shortcut_bar_button" -- thin solid white
 					--style = "shortcut_bar_button_small"
 					--style = "shortcut_bar_button_blue"
@@ -1346,7 +1346,7 @@ function open_market(player, selected_item)
 end
 function get_amount_in_inventory(force,item)
 	local count = 0
-	for i, data in pairs( global.forces[force.name].items ) do
+	for i, data in pairs( storage.forces[force.name].items ) do
 		if data.item == item then
 			count = count + data.count
 		end
@@ -1359,12 +1359,12 @@ function add_parts_to_gui(force, item_name, gui, amount)
 	local flow = main_flow.add{type="flow", name="market_buy_item", direction = "vertical"}
 	flow.style.horizontal_align = "center"
 	local inventory_amount = get_amount_in_inventory(force,item_name)
-	local style = "quick_bar_slot_button"
+	local style = "slot_button"
 	if inventory_amount > 0 then
 		style = "shortcut_bar_button_green"
 	end
 	local button = flow.add{type="sprite-button", name=item_name, sprite = item_name, number = buy_item(force,item_name,true), style = style}
-	local item = global.items[item_name]
+	local item = storage.items[item_name]
 	button.tooltip = {"", item.name, "\n\n", item.description}
 	style_item_button(button)
 	button.style.width = 50
@@ -1394,7 +1394,7 @@ function create_equipment_gui(player)
 	gui.style.right_padding = 2
 	gui.style.horizontal_align = "center"
 
-	local force_data = global.forces[player.force.name]
+	local force_data = storage.forces[player.force.name]
 	local cols = 2
 	if 4+force_data.bonus_slots <= 6 then
 		cols = 2
@@ -1405,7 +1405,7 @@ function create_equipment_gui(player)
 	end
 	local table = gui.add{type = "table", name = "equipment_table", column_count = cols}
 	for i=1,4+force_data.bonus_slots do
-		local button = table.add{type = "sprite-button", name = "item_"..i, style = "recipe_slot_button"}
+		local button = table.add{type = "sprite-button", name = "item_"..i, style = "slot_button"}
 		style_item_button(button)
 		button.style.natural_height = 32
 		button.style.natural_width = 32

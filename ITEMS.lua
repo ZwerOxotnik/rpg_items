@@ -32,7 +32,7 @@ local function merge_localization(raw_data)
 end
 
 function make_items()
-	global.items = {
+	storage.items = {
 		["rpgitems_health_potion"] = {
 			effects = {},
 			name = {"", "[", {"rpg-items.potion"}, "]"},
@@ -851,12 +851,12 @@ function make_items()
 			parts = {}
 		}
 	}
-	-- if not game.active_mods["m-spell-pack"] then
-	--	global.items["rpgitems_mana_potion"] = nil
-	--	global.items["rpgitems_manareg_0"] = nil
+	-- if not script.active_mods["m-spell-pack"] then
+	--	storage.items["rpgitems_mana_potion"] = nil
+	--	storage.items["rpgitems_manareg_0"] = nil
 	-- end
 
-	for _, data in pairs(global.items) do
+	for _, data in pairs(storage.items) do
 		data.description = make_description(data)
 	end
 end
@@ -1052,7 +1052,7 @@ end
 --	worker_robots_battery_modifier
 --	worker_robots_storage_bonus
 --	inserter_stack_size_bonus
---	stack_inserter_capacity_bonus
+--	bulk_inserter_capacity_bonus
 --	following_robots_lifetime_modifier
 --	artillery_range_modifier
 --	mining_drill_productivity_bonus

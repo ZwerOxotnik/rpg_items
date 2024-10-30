@@ -38,9 +38,13 @@ market.picture = {
 
 local recipe = table.deepcopy(data.raw.recipe["rocket-silo"])
 recipe.name = "rpgitems-market"
-recipe.result = "rpgitems-market"
 recipe.enabled = true
-recipe.ingredients = {{"iron-plate", 1000}, {"copper-plate", 1000}, {"stone-brick", 1000}}
+recipe.results = {{type = "item", name = recipe.name, amount = 1}}
+recipe.ingredients = {
+	{type = "item", name = "iron-plate",   amount = 1000},
+	{type = "item", name = "copper-plate", amount = 1000},
+	{type = "item", name = "stone-brick",  amount = 1000}
+}
 
 local item = table.deepcopy(data.raw.item["rocket-silo"])
 item.name = "rpgitems-market"

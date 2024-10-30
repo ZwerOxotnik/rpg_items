@@ -1,11 +1,11 @@
 {
   "name": "m-rpg_items",
-  "version": "0.21.12",
+  "version": "0.21.13",
   "title": "RPG Items",
   "author": "OwnlyMe",
   "contact": "zweroxotnik@gmail.com, Discord:ZwerOxotnik#7117",
   "homepage": "",
-  "factorio_version": "1.1",
+  "factorio_version": "2.0",
   "dependencies": [
     "base",
     "? m-spell-pack",
