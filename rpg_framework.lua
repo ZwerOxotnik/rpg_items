@@ -163,7 +163,7 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
 --				--local talents_status, talents = pcall(decode,decompressed)
 --				local talents =decode(decompressed)
 --				if talents_status then
---					--global.talents[player.index] = talents
+--					--storage.talents[player.index] = talents
 --					talents_gui(player)
 --				else
 --					player.print("JSON failed")
@@ -792,7 +792,7 @@ function remove_modifier(force, modifier, mult)
 				--if new_mod < 0.00000001 then
 				--	new_mod = 0
 				--end
-				--global.forces[force.name].bonuses.chardamage_mult = new_mod
+				--storage.forces[force.name].bonuses.chardamage_mult = new_mod
 			elseif not prototypes.ammo_category[modifier.ammo] then
 				game.print("ammo type "..modifier.ammo.." not existing anymore")
 			else
@@ -837,7 +837,7 @@ function remove_modifier(force, modifier, mult)
 		end
 	elseif modifier.type == "other" then
 		if modifier.unique then
-			local new_mod = math.max(0,global.forces[force.name].bonuses[modifier.modifier] - modifier.value*mult)
+			local new_mod = math.max(0,storage.forces[force.name].bonuses[modifier.modifier] - modifier.value*mult)
 			if new_mod < 0.00000001 then
 				new_mod = 0
 			end
@@ -850,7 +850,7 @@ function remove_modifier(force, modifier, mult)
 			storage.forces[force.name].bonuses[modifier.modifier] = new_mod
 		end
 	elseif modifier.type == "giveitem" then
-		local new_mod = math.max(0,global.forces[force.name].giveitem[modifier.item] - modifier.per_second*mult)
+		local new_mod = math.max(0, storage.forces[force.name].giveitem[modifier.item] - modifier.per_second*mult)
 		if new_mod < 0.00000001 then
 			new_mod = 0
 		end
@@ -890,7 +890,7 @@ function add_modifier(force, modifier, mult)
 				for a in pairs(prototypes.ammo_category) do
 					force.set_ammo_damage_modifier(a, math.max(0,force.get_ammo_damage_modifier(a) + modifier.value*mult))
 				end
-				--global.forces[force.name].bonuses.chardamage_mult = storage.forces[force.name].bonuses.chardamage_mult +modifier.value*mult
+				--storage.forces[force.name].bonuses.chardamage_mult = storage.forces[force.name].bonuses.chardamage_mult +modifier.value*mult
 			elseif not prototypes.ammo_category[modifier.ammo] then
 				game.print("ammo type "..modifier.ammo.." not existing anymore")
 			else
@@ -1000,7 +1000,7 @@ function add_modifiers(force, tbl, stack_cache)
 				--if new_mod < 0.00000001 then
 				--	new_mod = 0
 				--end
-				--global.forces[force.name].bonuses.chardamage_mult = new_mod
+				--storage.forces[force.name].bonuses.chardamage_mult = new_mod
 			elseif modifier.modifier == "gun_speed_modifier" and not modifier.ammo then
 				for a in pairs(prototypes.ammo_category) do
 					local new_mod = deepcopy(mod)

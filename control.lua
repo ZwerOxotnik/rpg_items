@@ -12,9 +12,9 @@ local RED_COLOR = {r=1,g=0,b=0}
 
 
 remote.add_interface("rpg-items", {
-	get = function(field) return global[field] end,
+	get = function(field) return storage[field] end,
 	set = function(field, value)
-		global[field] = value
+		storage[field] = value
 	end,
 	add_gold = function(force, value)
 		local force_data = storage.forces[force.name]
@@ -113,8 +113,8 @@ script.on_init( function()
 }
 	if script.active_mods["m-spell-pack"] then
 		storage.use_spellpack = true
-		--global.all_talents.b["t21"] = {type = "other", modifier = "magic_resistance", value = 2}
-		--global.all_talents.b["t22"] = {type = "other", modifier = "magic_resistance", value = 0.06, periodical = 0}
+		--storage.all_talents.b["t21"] = {type = "other", modifier = "magic_resistance", value = 2}
+		--storage.all_talents.b["t22"] = {type = "other", modifier = "magic_resistance", value = 0.06, periodical = 0}
 		storage.all_talents.b["t23"] = {type = "spellpack", modifier = "max_mana", value = 2}
 		storage.all_talents.b["t24"] = {type = "spellpack", modifier = "max_mana", value = 0.02, periodical = 0}
 		storage.all_talents.b["t25"] = {type = "spellpack", modifier = "mana_reg", value = 0.05}
@@ -155,9 +155,9 @@ script.on_init( function()
 	storage.repairing = {}
 	storage.momentum = {}
 	storage.immolation = {}
-	--global.units = {}
-	--global.lobbys = {}
-	--global.eq_gui_clicks = {}
+	--storage.units = {}
+	--storage.lobbys = {}
+	--storage.eq_gui_clicks = {}
 	storage.talents = {}
 	refresh_forces()
 	-- storage.version = 3
