@@ -428,11 +428,14 @@ script.on_nth_tick(6, function(event)
 		local force_name = player.force.name
 		local force_data = storage.forces[force_name]
 		local player_momentum = storage.momentum[player_index]
-		if force_data and force_data.bonuses.momentum > 0 and player.character and player.character.valid then
+		local character = player.character
+		if force_data and force_data.bonuses.momentum > 0 and character and character.valid then
 			local position_x = player.position.x
 			local position_y = player.position.y
 			if not player_momentum then
-				storage.momentum[player_index] = {position_x = position_x, position_y = position_y, momentum = 0}
+				storage.momentum[player_index] = {
+					position_x = position_x, position_y = position_y, momentum = 0
+				}
 				player_momentum = storage.momentum[player_index]
 			end
 
@@ -441,7 +444,10 @@ script.on_nth_tick(6, function(event)
 				player_momentum.momentum = 0
 			elseif event.tick % 60 == 0 and player_momentum.momentum < 5 then
 				player_momentum.momentum = player_momentum.momentum + 1
-				player.surface.create_entity{name = "rpgitems-speed-sticker-"..player_momentum.momentum, position=player.position, target= player.character}
+				character.surface.create_entity{
+					name = "rpgitems-speed-sticker-" .. player_momentum.momentum,
+					position = player.position, target = character
+				}
 			end
 			player_momentum.position_x = position_x
 			player_momentum.position_y = position_y
@@ -793,7 +799,9 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 	if random() < force_bonuses.stun * (cause.type == "character" and 6 or 2) then
 		--game.print(storage.forces[force].bonuses.stun * (cause.type == "character" and 2 or 1))
 		if entity.type == "unit" or entity.type == "character" then
-			entity.surface.create_entity{ name="rpgitems-stun-sticker", position=entity.position, target=entity }
+			entity.surface.create_entity{
+				name="rpgitems-stun-sticker", position=entity.position, target=entity
+			}
 		end
 	end
 
@@ -851,7 +859,7 @@ script.on_event(defines.events.on_pre_player_died, function(event)
 		if character and character.valid then
 			character.health = 1
 			character.destructible = false
-			player.surface.create_entity{name = "rpgitems-halo-sticker-"..level, position= player.position, target = character}
+			character.surface.create_entity{name = "rpgitems-halo-sticker-"..level, position= player.position, target = character}
 			storage.indestructible_characters[character] = event.tick+level*60
 		end
 	end

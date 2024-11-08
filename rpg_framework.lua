@@ -117,11 +117,12 @@ script.on_event(defines.events.on_gui_click, function(event)
 				storage.immolation[player.index] = not storage.immolation[player.index]
 			elseif item_name == "rpgitems_flamecloak_spepa" then
 				storage.immolation[player.index] = not storage.immolation[player.index]
-				if storage.immolation[player.index] and player.character and player.character.valid then
-					player.surface.create_entity{
+				local character = player.character
+				if storage.immolation[player.index] and character and character.valid then
+					character.surface.create_entity{
 						name = "rpgitems-flamecloak-sticker",
 						position = player.position,
-						target = player.character
+						target = character
 					}
 				else
 					disable_immolation(player)
@@ -788,7 +789,7 @@ function remove_modifier(force, modifier, mult)
 					end
 					force.set_ammo_damage_modifier(a, new_mod)
 				end
-				--local new_mod = math.max(0,global.forces[force.name].bonuses.chardamage_mult -modifier.value*mult)
+				--local new_mod = math.max(0, storage.forces[force.name].bonuses.chardamage_mult -modifier.value*mult)
 				--if new_mod < 0.00000001 then
 				--	new_mod = 0
 				--end
@@ -996,7 +997,7 @@ function add_modifiers(force, tbl, stack_cache)
 					add_modifier(force, new_mod, mult)
 					modifiers[#modifiers+1] = new_mod
 				end
-				--local new_mod = math.max(0,global.forces[force.name].bonuses.chardamage_mult +modifier.value*mult)
+				--local new_mod = math.max(0, storage.forces[force.name].bonuses.chardamage_mult +modifier.value*mult)
 				--if new_mod < 0.00000001 then
 				--	new_mod = 0
 				--end
