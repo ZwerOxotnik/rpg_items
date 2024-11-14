@@ -707,8 +707,12 @@ script.on_event(defines.events.on_entity_died, function(event)
 	-- 	text = "+1",
 	--	color = {r=0,g=0.7,b=0}
 	-- }
-	for _, player in pairs(force_data.players) do -- TODO: Check
-		player.gui.left.rpgitems_item_gui.money.caption = floor(force_data.money).."[img=rpgitems-coin]"
+	local caption = floor(force_data.money).."[img=rpgitems-coin]"
+	for _, player in pairs(force_data.players) do
+		local items_gui = player.gui.left.rpgitems_item_gui
+		if items_gui and items_gui.valid then
+			items_gui.money.caption = caption
+		end
 	end
 end, {
 	{filter = "type", type = "tree", invert = true, mode = "and"},
