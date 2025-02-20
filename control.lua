@@ -763,32 +763,31 @@ script.on_event(defines.events.on_entity_damaged, function(event)
 	local cause = event.cause
 	local entity = event.entity
 
-	if entity then
-		local force = entity.force
-		local force_data = storage.forces[force.name]
-		if force_data == nil then return end
+	if not entity.valid then return end
 
-		local force_bonuses = force_data.bonuses
-		if entity.type == "character" then
-			local damage = force_bonuses.thorns
-			if cause and damage > 0 and cause.valid and cause.health then
-				cause.damage(damage, force, event.damage_type.name)
-			end
-			-- local player = entity.player
-			--if event.damage_type.name:sub(1,4)=="osp_" then
-			--	local mres = storage.forces[player.force.name].bonuses.magic_resistance /(storage.forces[player.force.name].bonuses.magic_resistance+100)
-			--	entity.health = entity.health + event.final_damage_amount*mres
-			--else
-				local armor = force_bonuses.armor
-				apply_armor(event, armor / (armor+100))
-			--end
-		elseif force_data and force_bonuses.repair > 0 and entity.name ~= "RITEG-1" then
-			storage.repairing[entity.unit_number] = entity
+	local force = entity.force
+	local force_data = storage.forces[force.name]
+	if force_data == nil then return end
+
+	local force_bonuses = force_data.bonuses
+	if entity.type == "character" then
+		local damage = force_bonuses.thorns
+		if cause and damage > 0 and cause.valid and cause.health then
+			cause.damage(damage, force, event.damage_type.name)
 		end
+		-- local player = entity.player
+		--if event.damage_type.name:sub(1,4)=="osp_" then
+		--	local mres = storage.forces[player.force.name].bonuses.magic_resistance /(storage.forces[player.force.name].bonuses.magic_resistance+100)
+		--	entity.health = entity.health + event.final_damage_amount*mres
+		--else
+			local armor = force_bonuses.armor
+			apply_armor(event, armor / (armor+100))
+		--end
+	elseif force_data and force_bonuses.repair > 0 and entity.name ~= "RITEG-1" then
+		storage.repairing[entity.unit_number] = entity
 	end
 
 	if not (cause and cause.valid) then return end
-	if not entity.valid then return end
 	local force_data = storage.forces[cause.force.name]
 	if force_data == nil then return end
 

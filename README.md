@@ -31,7 +31,7 @@ Special Thanks to
 License
 -------
 
-Copyright (c) 2021-2024 ZwerOxotnik <zweroxotnik@gmail.com>
+Copyright (c) 2021-2025 ZwerOxotnik <zweroxotnik@gmail.com>
 
 Copyright (c) 2019-2020 OwnlyMe
 
