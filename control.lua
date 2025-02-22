@@ -727,15 +727,18 @@ script.on_event(defines.events.on_player_died, function(event)
 end)
 
 function apply_armor(event, armor)
-	local grid = event.entity.grid
+	local entity = event.entity
+	if not (entity and entity.valid) then return end
+
+	local grid = entity.grid
 	local bonus_healing = 0
 	if grid and grid.max_shield > 0 then
 		local actual_damage = event.original_damage_amount
-		local armor_inv = event.entity.get_inventory(defines.inventory.character_armor)
-		if armor_inv[1].valid_for_read and armor_inv[1].prototype.resistances then
+		local armor_inv = entity.get_inventory(defines.inventory.character_armor)[1]
+		if armor_inv.valid_for_read and armor_inv.prototype.resistances then
 			local event_damage_type = event.damage_type.name
-			if armor_inv[1].prototype.resistances[event_damage_type] then
-				actual_damage = max(0, (event.original_damage_amount - armor_inv[1].prototype.resistances[event_damage_type].decrease) * (1-armor_inv[1].prototype.resistances[event_damage_type].percent))
+			if armor_inv.prototype.resistances[event_damage_type] then
+				actual_damage = max(0, (event.original_damage_amount - armor_inv.prototype.resistances[event_damage_type].decrease) * (1-armor_inv.prototype.resistances[event_damage_type].percent))
 			end
 		end
 		local shield_healing = (actual_damage - event.final_damage_amount) *armor
@@ -751,11 +754,12 @@ function apply_armor(event, armor)
 				end
 			end
 		end
-	--	event.entity.health = event.entity.health + healing - shield_healing
+	--	entity.health = entity.health + healing - shield_healing
 	--else
-	--	event.entity.health = event.entity.health + actual_damage*armor
+	--	entity.health = entity.health + actual_damage*armor
 	end
-	event.entity.health = event.entity.health + event.final_damage_amount*armor + bonus_healing
+
+	entity.health = entity.health + event.final_damage_amount*armor + bonus_healing
 end
 
 -- TODO: optimize
