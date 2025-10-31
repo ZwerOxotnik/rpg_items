@@ -720,10 +720,79 @@ end, {
 })
 
 
+---@param player LuaPlayer
+---@param surface LuaSurface?
+---@param target_position? MapPosition
+---@return boolean
+local function teleport_safely(player, surface, target_position)
+	if not (player and player.valid) then
+		return false
+	end
+	if surface then
+		if not surface.valid then
+			return false
+		end
+	else
+		surface = player.surface
+	end
+	if target_position == nil then
+		return false
+	end
+
+	local character = player.character
+	if not (character and character.valid) then
+		-- Perhaps, its should beginning changed
+		player.teleport(target_position, surface)
+		return true
+	end
+
+	local target
+	local is_vehicle = false
+	local vehicle = player.vehicle
+	local target_name
+	if vehicle and vehicle.valid and not vehicle.train and vehicle.get_driver() == character and vehicle.get_passenger() == nil then
+		target = vehicle
+		target_name = vehicle.name
+		is_vehicle = true
+	else
+		target = player
+		target_name = character.name
+	end
+	local radius = 200
+	local non_colliding_position = surface.find_non_colliding_position(target_name, target_position, radius, 5)
+
+	if not non_colliding_position then
+		-- TODO: add localization
+		player.print("It's not possible to teleport you because there's not enough space for your character")
+		return false
+	end
+
+	if is_vehicle then
+		if vehicle.type == "spider-vehicle" then
+			target.stop_spider()
+		else
+			target.speed = 0
+		end
+	end
+	target.teleport(non_colliding_position, surface)
+	return true
+end
+
+
+---@param event EventData.on_player_died
 script.on_event(defines.events.on_player_died, function(event)
 	local player = game.get_player(event.player_index)
 	if not (player and player.valid) then return end
-	if player.gui.center.rpgitems_market then player.gui.center.rpgitems_market.destroy() end
+
+	local market_gui = player.gui.center.rpgitems_market
+	if market_gui then market_gui.destroy() end
+
+	local character = player.character
+	if not (character and character.valid) then return end
+
+	if character.surface.find_entity("rpgitems-market", character.position) then
+		teleport_safely(player, nil, character.position)
+	end
 end)
 
 function apply_armor(event, armor)
