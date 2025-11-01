@@ -788,10 +788,15 @@ script.on_event(defines.events.on_player_died, function(event)
 	if market_gui then market_gui.destroy() end
 
 	local character = player.character
-	if not (character and character.valid) then return end
+	local target
+	if character and character.valid then
+		target = character
+	else
+		target = player
+	end
 
-	if character.surface.find_entity("rpgitems-market", character.position) then
-		teleport_safely(player, nil, character.position)
+	if target.surface.find_entity("rpgitems-market", target.position) then
+		teleport_safely(player, nil, target.position)
 	end
 end)
 
