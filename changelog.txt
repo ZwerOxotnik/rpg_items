@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.21.21
+Date: 2026-01-28
+  Bugfixes:
+    - Improved data consistency (Thanks to SoulForge, https://mods.factorio.com/mod/m-rpg_items/discussion/6977852925c8996413a5adc6 )
+---------------------------------------------------------------------------------------------------
 Version: 0.21.20
 Date: 2025-11-01
   Bugfixes:

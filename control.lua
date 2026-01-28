@@ -40,10 +40,10 @@ remote.add_interface("rpg-items", {
 
 
 local function refresh_forces()
-	-- Init force data
 	for _, force in pairs(game.forces) do
 		local force_name = force.name
 		if force.players then
+			-- Init force data for new player forces
 			if not storage.forces[force_name] then
 				storage.forces[force_name] = {
 					players = {}, color = force, research = {}, money = 16000,
@@ -58,7 +58,7 @@ local function refresh_forces()
 		end
 
 		if storage.forces[force_name] then
-			storage.forces[force_name].players = force.players
+			storage.forces[force_name].players = force.players -- Refactor???
 			for _, player in pairs(force.players) do
 				create_equipment_gui(player)
 				local talents_data = storage.talents[force_name]
@@ -78,39 +78,39 @@ local function refresh_forces()
 	end
 end
 
-script.on_init( function()
+local function initialize_global_data()
 	storage.indestructible_characters = storage.indestructible_characters or {}
 	make_items()
 	storage.all_talents = {
-	r={
-		["t1"] = {type = "force", modifier = "ammo_damage_modifier", value = 0.02},
-		["t2"] = {type = "force", modifier = "ammo_damage_modifier", value = 0.0002, periodical = 0},
-		["t3"] = {type = "force", modifier = "gun_speed_modifier", value = 0.03},
-		["t4"] = {type = "other", modifier = "crit", value = 0.005},
-		["t5"] = {type = "other", modifier = "critdamage", value = 0.015},
-		--["t6"] = {type = "other", modifier = "chardamage", value = 2},
-		--["t7"] = {type = "force", modifier = "turret_attack_modifier", value = 0.02},
-		["t8"] = {type = "other", modifier = "thorns", value = 0.5},
-		["t9"] = {type = "other", modifier = "thorns", value = 0.005, periodical = 0},
-		["t27"] = {type = "other", modifier = "lifesteal", value = 0.05},
-	},
-	g={
-		["t10"] = {type = "other", modifier = "income", value = 0.05},
-		["t11"] = {type = "force", modifier = "character_health_bonus", value = 10},
-		["t12"] = {type = "force", modifier = "character_health_bonus", value = 0.1, periodical = 0},
-		["t13"] = {type = "other", modifier = "regen", value = 0.3},
-		["t14"] = {type = "other", modifier = "regen", value = 0.003, periodical = 0},
-		["t15"] = {type = "other", modifier = "armor", value = 1},
-		["t16"] = {type = "other", modifier = "armor", value = 0.01, periodical = 0},
-		["t17"] = {type = "force", modifier = "character_running_speed_modifier", value = 0.02},
-	},
-	b={
-		["t18"] = {type = "force", modifier = "manual_mining_speed_modifier", value = 0.1},
-		["t19"] = {type = "force", modifier = "manual_crafting_speed_modifier", value = 0.05},
-		["t20"] = {type = "force", modifier = "character_inventory_slots_bonus", value = 1},
-		["t26"] = {type = "force", modifier = "character_reach_distance_bonus", value = 1},
-	},
-}
+		r={
+			["t1"] = {type = "force", modifier = "ammo_damage_modifier", value = 0.02},
+			["t2"] = {type = "force", modifier = "ammo_damage_modifier", value = 0.0002, periodical = 0},
+			["t3"] = {type = "force", modifier = "gun_speed_modifier", value = 0.03},
+			["t4"] = {type = "other", modifier = "crit", value = 0.005},
+			["t5"] = {type = "other", modifier = "critdamage", value = 0.015},
+			--["t6"] = {type = "other", modifier = "chardamage", value = 2},
+			--["t7"] = {type = "force", modifier = "turret_attack_modifier", value = 0.02},
+			["t8"] = {type = "other", modifier = "thorns", value = 0.5},
+			["t9"] = {type = "other", modifier = "thorns", value = 0.005, periodical = 0},
+			["t27"] = {type = "other", modifier = "lifesteal", value = 0.05},
+		},
+		g={
+			["t10"] = {type = "other", modifier = "income", value = 0.05},
+			["t11"] = {type = "force", modifier = "character_health_bonus", value = 10},
+			["t12"] = {type = "force", modifier = "character_health_bonus", value = 0.1, periodical = 0},
+			["t13"] = {type = "other", modifier = "regen", value = 0.3},
+			["t14"] = {type = "other", modifier = "regen", value = 0.003, periodical = 0},
+			["t15"] = {type = "other", modifier = "armor", value = 1},
+			["t16"] = {type = "other", modifier = "armor", value = 0.01, periodical = 0},
+			["t17"] = {type = "force", modifier = "character_running_speed_modifier", value = 0.02},
+		},
+		b={
+			["t18"] = {type = "force", modifier = "manual_mining_speed_modifier", value = 0.1},
+			["t19"] = {type = "force", modifier = "manual_crafting_speed_modifier", value = 0.05},
+			["t20"] = {type = "force", modifier = "character_inventory_slots_bonus", value = 1},
+			["t26"] = {type = "force", modifier = "character_reach_distance_bonus", value = 1},
+		},
+	}
 	if script.active_mods["m-spell-pack"] then
 		storage.use_spellpack = true
 		--storage.all_talents.b["t21"] = {type = "other", modifier = "magic_resistance", value = 2}
@@ -148,6 +148,10 @@ script.on_init( function()
 		["t26"]="+1 Reach Distance",
 		["t27"]="+0.05% Lifesteal",
 	}
+end
+
+script.on_init( function()
+	initialize_global_data()
 
 	storage.initialized = true
 	storage.giveitem_cache = {}
@@ -163,6 +167,8 @@ script.on_init( function()
 	-- storage.version = 3
 end)
 
+script.on_load(initialize_global_data)
+
 script.on_event(defines.events.on_game_created_from_scenario, function()
 	if remote.interfaces["rpgitems_dont_make_market"] then return end
 
@@ -175,7 +181,8 @@ script.on_event(defines.events.on_game_created_from_scenario, function()
 end)
 
 script.on_configuration_changed(function()
-	storage.indestructible_characters = storage.indestructible_characters or {}
+	initialize_global_data()
+
 	-- if not storage.version then
 		-- storage.version = 1
 		-- for _, data in pairs(storage.forces) do
@@ -220,7 +227,7 @@ script.on_configuration_changed(function()
 	-- 						players[player.index][modifier.modifier] = new_mod
 	-- 					end
 	-- 					remote.call("spell-pack","set","players",players)
-
+	--
 	-- 					if tonumber(script.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 	-- 					else
@@ -241,7 +248,7 @@ script.on_configuration_changed(function()
 	-- 						players[player.index][modifier.modifier] = new_mod
 	-- 					end
 	-- 					remote.call("spell-pack","set","players",players)
-
+	--
 	-- 					if tonumber(script.active_mods["m-spell-pack"]:sub(-2)) >= 18 then
 	-- 						remote.call("spell-pack", "modforce", game.forces[force_name],modifier.modifier, modifier.value*mult)
 	-- 					else
@@ -312,6 +319,13 @@ script.on_configuration_changed(function()
 	end
 
 	refresh_forces()
+
+	for _, force in pairs(game.forces) do
+		if storage.talents[force.name] then -- check if talents exist for this force
+			apply_talents(force)
+			update_items(force) -- update items as well, just in case
+		end
+	end
 end)
 
 --function on_player_created(player)
