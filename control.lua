@@ -167,8 +167,6 @@ script.on_init( function()
 	-- storage.version = 3
 end)
 
-script.on_load(initialize_global_data)
-
 script.on_event(defines.events.on_game_created_from_scenario, function()
 	if remote.interfaces["rpgitems_dont_make_market"] then return end
 
