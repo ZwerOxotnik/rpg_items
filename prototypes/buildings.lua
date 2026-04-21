@@ -26,7 +26,7 @@ end
 local market = table.deepcopy(data.raw.market.market)
 market.name = "rpgitems-market"
 market.localised_name = "Equipment Market"
-minable = {mining_time = 1, result = "rpgitems-market"}
+market.minable = {mining_time = 1, result = "rpgitems-market"}
 market.order = "zzzz"
 market.picture = {
 	filename = "__m-rpg_items__/graphics/equipment-market.png",

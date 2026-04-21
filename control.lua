@@ -174,7 +174,7 @@ script.on_event(defines.events.on_game_created_from_scenario, function()
 	local pos = surface.find_non_colliding_position("rocket-silo", {x=0,y=0}, 50, 0.5, true)
 	if pos then
 		local market = surface.create_entity{name = "rpgitems-market", position = pos, force = "player"}
-		market.minable = false
+		-- market.minable = false
 	end
 end)
 
