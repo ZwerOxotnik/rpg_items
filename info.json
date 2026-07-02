@@ -5,7 +5,7 @@
   "author": "OwnlyMe",
   "contact": "zweroxotnik@gmail.com, Discord:ZwerOxotnik#7117",
   "homepage": "",
-  "factorio_version": "2.0",
+  "factorio_version": "2.1",
   "dependencies": [
     "base",
     "? m-spell-pack",
